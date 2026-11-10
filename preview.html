@@ -1,0 +1,902 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>EventHub | Event Management System Preview</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      font-family: 'DM Sans', sans-serif;
+      color: #17233b;
+      background: #fff;
+      font-synthesis: none;
+      text-rendering: optimizeLegibility;
+      font-weight: 400;
+      --navy: #14213d;
+      --blue: #3157d5;
+      --muted: #6d7890;
+      --line: #e7eaf1;
+      --soft: #f6f8fc;
+    }
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body { margin: 0; min-width: 320px; background: #fff; }
+    a { color: inherit; text-decoration: none; }
+    button, input, textarea { font: inherit; }
+    button { cursor: pointer; }
+
+    /* Top banner explaining preview mode */
+    .preview-banner {
+      background: #1e293b;
+      color: #f8fafc;
+      padding: 10px 20px;
+      font-size: 13px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.15);
+    }
+    .preview-pill {
+      background: #3157d5;
+      color: white;
+      padding: 3px 8px;
+      border-radius: 4px;
+      font-weight: 700;
+      font-size: 11px;
+      margin-right: 8px;
+    }
+    .preview-tabs {
+      display: flex;
+      gap: 8px;
+    }
+    .preview-tab-btn {
+      background: #334155;
+      color: #e2e8f0;
+      border: 1px solid #475569;
+      padding: 5px 12px;
+      border-radius: 6px;
+      font-size: 12px;
+      font-weight: 600;
+      transition: 0.2s;
+    }
+    .preview-tab-btn.active, .preview-tab-btn:hover {
+      background: #3157d5;
+      color: #fff;
+      border-color: #3157d5;
+    }
+
+    .navbar {
+      height: 76px;
+      padding: 0 max(5vw, 24px);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid var(--line);
+      background: #fff;
+      position: sticky;
+      top: 41px;
+      z-index: 10;
+    }
+    .brand {
+      font: 800 22px Manrope, sans-serif;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      color: var(--navy);
+    }
+    .brand-mark {
+      width: 32px;
+      height: 32px;
+      border-radius: 10px;
+      background: var(--blue);
+      color: white;
+      display: grid;
+      place-items: center;
+      font-size: 19px;
+    }
+    .navbar nav {
+      display: flex;
+      gap: 30px;
+      color: #68738a;
+      font-size: 14px;
+    }
+    .navbar nav a.active, .navbar nav a:hover {
+      color: var(--blue);
+    }
+    .nav-actions {
+      display: flex;
+      align-items: center;
+      gap: 18px;
+      font-size: 14px;
+    }
+    .welcome { color: var(--muted); }
+    .nav-login { font-weight: 600; }
+    .btn {
+      border: 0;
+      border-radius: 8px;
+      padding: 12px 18px;
+      font-weight: 700;
+      display: inline-flex;
+      justify-content: center;
+      align-items: center;
+      gap: 9px;
+      transition: .2s;
+    }
+    .btn-primary { background: var(--blue); color: #fff; }
+    .btn-primary:hover { background: #2445b7; transform: translateY(-1px); }
+    .btn-light { background: #fff; color: var(--navy); margin-top: 14px; }
+    .btn-outline { border: 1px solid #d7ddea; background: #fff; color: var(--navy); }
+    .btn-outline:hover { border-color: var(--blue); color: var(--blue); }
+    .btn-danger { background: #fff1f0; color: #c43e37; }
+    .btn-small { padding: 8px 12px; font-size: 12px; }
+    .btn-full { width: 100%; }
+
+    .hero {
+      background: #14213d;
+      color: #fff;
+      min-height: 440px;
+      padding: 76px max(9vw, 28px);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      overflow: hidden;
+      position: relative;
+    }
+    .hero:after {
+      content: "";
+      position: absolute;
+      width: 540px;
+      height: 540px;
+      border: 1px solid #ffffff18;
+      border-radius: 50%;
+      right: 8%;
+      top: -190px;
+      box-shadow: 0 0 0 65px #ffffff08, 0 0 0 130px #ffffff05;
+    }
+    .hero-content { position: relative; z-index: 1; max-width: 570px; }
+    .eyebrow { font-size: 10px; letter-spacing: 2px; font-weight: 700; color: #aab9ff; }
+    .eyebrow.dark { color: var(--blue); }
+    .hero h1 {
+      font: 800 clamp(40px, 5vw, 62px)/1.1 Manrope, sans-serif;
+      letter-spacing: -2px;
+      margin: 20px 0;
+    }
+    .hero h1 span { color: #aab9ff; }
+    .hero p { max-width: 480px; color: #c4ccdc; line-height: 1.8; font-size: 15px; }
+    .hero-decoration {
+      width: 260px;
+      height: 260px;
+      border: 1px solid #ffffff40;
+      border-radius: 50%;
+      display: grid;
+      place-items: center;
+      position: relative;
+      z-index: 1;
+      margin-right: 5%;
+    }
+    .hero-circle { font-size: 100px; color: #aab9ff; }
+    .hero-note {
+      position: absolute;
+      background: #fff;
+      color: var(--navy);
+      padding: 17px 22px;
+      border-radius: 12px;
+      right: -35px;
+      bottom: 8px;
+      line-height: 1.45;
+      box-shadow: 0 12px 40px #0002;
+      font-size: 13px;
+    }
+    .hero-note strong { color: var(--blue); }
+
+    .content-section { padding: 76px max(7vw, 24px); }
+    .section-heading {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-end;
+      gap: 25px;
+      margin-bottom: 24px;
+    }
+    .section-heading h2, .callout h2 {
+      font: 800 30px Manrope, sans-serif;
+      letter-spacing: -.7px;
+      margin: 10px 0;
+    }
+    .section-heading p, .callout p, .page-section>p { color: var(--muted); margin: 0; }
+    .search-box {
+      height: 46px;
+      width: min(370px, 100%);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      padding: 0 14px;
+      gap: 10px;
+      color: #8b95a8;
+    }
+    .search-box input { border: 0; outline: 0; width: 100%; font-size: 13px; }
+
+    /* Category Filter Pills */
+    .category-filter-bar {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 25px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+    .category-filter-btn {
+      padding: 8px 16px;
+      border-radius: 20px;
+      border: 1px solid var(--line);
+      background: #fff;
+      color: var(--muted);
+      font-size: 13px;
+      font-weight: 600;
+      transition: .2s;
+    }
+    .category-filter-btn:hover { border-color: var(--blue); color: var(--blue); }
+    .category-filter-btn.active { background: var(--blue); color: #fff; border-color: var(--blue); }
+
+    .event-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 24px;
+    }
+    .event-card {
+      border: 1px solid var(--line);
+      border-radius: 13px;
+      overflow: hidden;
+      background: #fff;
+      transition: .2s;
+    }
+    .event-card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 12px 35px #18294b12;
+    }
+    .event-image-wrap {
+      height: 190px;
+      display: block;
+      position: relative;
+      overflow: hidden;
+      background: #e9edf6;
+    }
+    .event-image { width: 100%; height: 100%; object-fit: cover; transition: .3s; }
+    .event-card:hover .event-image { transform: scale(1.04); }
+    .category-pill {
+      position: absolute;
+      top: 14px;
+      left: 14px;
+      background: #fff;
+      color: var(--blue);
+      padding: 6px 10px;
+      border-radius: 20px;
+      font-size: 10px;
+      font-weight: 700;
+    }
+    .event-card-body { padding: 20px; }
+    .event-date-small { font-size: 11px; color: var(--blue); font-weight: 700; }
+    .event-card h3 { font: 700 18px/1.35 Manrope, sans-serif; margin: 10px 0; }
+    .event-card p {
+      font-size: 12px;
+      color: var(--muted);
+      line-height: 1.7;
+      min-height: 60px;
+      display: -webkit-box;
+      -webkit-line-clamp: 3;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+    .event-card-footer {
+      display: flex;
+      justify-content: space-between;
+      gap: 8px;
+      color: #7c879a;
+      font-size: 10px;
+      border-top: 1px solid var(--line);
+      padding: 13px 0;
+      margin-top: 14px;
+    }
+    .text-link { font-size: 12px; font-weight: 700; color: var(--blue); cursor: pointer; }
+
+    .callout {
+      margin: 0 max(7vw, 24px) 70px;
+      padding: 35px 42px;
+      background: #f0f3ff;
+      border-radius: 15px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .callout p { font-size: 13px; }
+    .callout-icon { font-size: 75px; color: #8197ed; }
+
+    .footer {
+      border-top: 1px solid var(--line);
+      padding: 25px max(7vw, 24px);
+      display: flex;
+      justify-content: space-between;
+      color: #7e899c;
+      font-size: 11px;
+    }
+    .footer strong { font: 800 16px Manrope; color: var(--navy); }
+
+    /* Modals & alternative views */
+    .view-container { display: none; }
+    .view-container.active-view { display: block; }
+
+    .auth-page {
+      min-height: calc(100vh - 120px);
+      background: var(--soft);
+      display: grid;
+      place-items: center;
+      padding: 45px 20px;
+    }
+    .auth-card {
+      width: min(450px, 100%);
+      background: #fff;
+      border: 1px solid var(--line);
+      border-radius: 15px;
+      padding: 38px;
+      box-shadow: 0 15px 50px #1b2b4d0b;
+    }
+    .auth-card h1 { font: 800 27px Manrope; margin: 10px 0; }
+    .auth-card > p { font-size: 13px; color: var(--muted); line-height: 1.7; margin-bottom: 25px; }
+    .form-stack { display: grid; gap: 16px; }
+    .form-stack label { font-size: 12px; font-weight: 700; color: #3d4960; display: grid; gap: 7px; }
+    .form-stack input {
+      border: 1px solid #dfe4ed;
+      border-radius: 7px;
+      padding: 12px;
+      outline: none;
+      width: 100%;
+      font-size: 13px;
+    }
+
+    .detail-page { padding: 35px max(9vw, 24px) 80px; }
+    .back-link { display: inline-block; color: var(--muted); font-size: 13px; margin-bottom: 20px; cursor: pointer; }
+    .detail-image { width: 100%; height: 330px; object-fit: cover; border-radius: 14px; }
+    .detail-layout { display: grid; grid-template-columns: 1fr 330px; gap: 50px; margin-top: 35px; }
+    .detail-main h1 { font: 800 36px Manrope; letter-spacing: -1px; margin: 14px 0; }
+    .detail-description { color: var(--muted); line-height: 1.8; font-size: 14px; }
+    .register-panel {
+      border: 1px solid var(--line);
+      border-radius: 13px;
+      padding: 24px;
+      height: max-content;
+      box-shadow: 0 10px 35px #1b2b4d08;
+    }
+    .register-panel h2 { font: 700 20px Manrope; margin: 0; }
+    .spots { display: flex; align-items: center; gap: 12px; margin: 22px 0; }
+    .spots strong { font: 800 35px Manrope; color: var(--blue); }
+    .spots span { font-size: 11px; color: var(--muted); line-height: 1.5; }
+    .capacity-track { height: 6px; border-radius: 9px; background: #edf0f6; margin-bottom: 24px; overflow: hidden; }
+    .capacity-track span { height: 100%; display: block; background: var(--blue); }
+
+    .stats-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; margin: 30px 0; }
+    .stat-card { border: 1px solid var(--line); border-radius: 10px; padding: 20px; background: #fff; }
+    .stat-card small { color: #8791a3; font-size: 10px; font-weight: 700; letter-spacing: 1px; }
+    .stat-card strong { display: block; font: 800 30px Manrope; margin-top: 10px; color: var(--navy); }
+    .table-wrap { overflow-x: auto; border: 1px solid var(--line); border-radius: 10px; margin-top: 25px; }
+    table { border-collapse: collapse; width: 100%; font-size: 12px; text-align: left; }
+    th { background: #f7f8fb; color: #68748a; font-size: 10px; text-transform: uppercase; letter-spacing: .7px; padding: 15px; }
+    td { padding: 15px; border-bottom: 1px solid var(--line); }
+
+    /* Ticket Modal & Admission Pass */
+    .ticket-modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(15, 23, 42, 0.75);
+      backdrop-filter: blur(4px);
+      display: none;
+      place-items: center;
+      z-index: 1000;
+      padding: 20px;
+    }
+    .ticket-modal-overlay.open { display: grid; }
+    .ticket-modal-content {
+      position: relative;
+      width: min(460px, 100%);
+      margin: auto;
+    }
+    .ticket-modal-close {
+      position: absolute;
+      top: -12px;
+      right: -12px;
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      background: #fff;
+      border: 1px solid var(--line);
+      font-size: 14px;
+      display: grid;
+      place-items: center;
+      cursor: pointer;
+      z-index: 10;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    }
+    .ticket-card {
+      background: #fff;
+      border-radius: 16px;
+      overflow: hidden;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.25);
+      border: 1px solid var(--line);
+    }
+    .ticket-header {
+      background: #14213d;
+      color: #fff;
+      padding: 20px 24px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .ticket-brand { display: flex; align-items: center; gap: 12px; }
+    .ticket-brand strong { display: block; font: 700 15px Manrope; color: #fff; }
+    .ticket-brand span { font-size: 11px; color: #aab9ff; }
+    .ticket-badge {
+      background: #eaf8f0;
+      color: #18764b;
+      font-size: 11px;
+      font-weight: 800;
+      padding: 4px 10px;
+      border-radius: 12px;
+      letter-spacing: 0.5px;
+    }
+    .ticket-body { padding: 24px; }
+    .ticket-event-title { font: 800 22px/1.3 Manrope; color: var(--navy); margin: 0 0 8px; }
+    .ticket-category-tag {
+      display: inline-block;
+      background: #eef2ff;
+      color: var(--blue);
+      padding: 4px 10px;
+      border-radius: 12px;
+      font-size: 11px;
+      font-weight: 700;
+      margin-bottom: 18px;
+    }
+    .ticket-details-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+      padding: 16px 0;
+      border-top: 1px dashed var(--line);
+      border-bottom: 1px dashed var(--line);
+    }
+    .ticket-details-grid div { display: grid; gap: 3px; }
+    .ticket-details-grid small { font-size: 10px; font-weight: 700; color: #8791a3; letter-spacing: 0.7px; }
+    .ticket-details-grid strong { font-size: 13px; color: var(--navy); }
+    .ticket-details-grid span { font-size: 12px; color: var(--muted); }
+    .ticket-code { font-family: monospace; font-size: 12px; color: var(--blue); font-weight: 700; }
+    .ticket-qr-section { text-align: center; margin-top: 18px; padding: 12px 0 4px; }
+    .ticket-qr-frame {
+      display: inline-block;
+      padding: 10px;
+      background: #fff;
+      border: 2px solid var(--line);
+      border-radius: 12px;
+      box-shadow: 0 4px 14px rgba(0,0,0,0.06);
+    }
+    .ticket-qr-img { width: 160px; height: 160px; display: block; }
+    .ticket-qr-section p { font-size: 11px; color: var(--muted); margin: 10px 0 0; }
+    .ticket-actions { padding: 0 24px 24px; }
+
+    @media print {
+      body * { visibility: hidden; }
+      .printable-ticket, .printable-ticket * { visibility: visible; }
+      .printable-ticket { position: fixed; left: 0; top: 0; width: 100%; box-shadow: none; border: 1px solid #ccc; }
+      .no-print { display: none !important; }
+    }
+
+    @media (max-width: 900px) {
+      .event-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .detail-layout { grid-template-columns: 1fr; }
+    }
+    @media (max-width: 650px) {
+      .event-grid { grid-template-columns: 1fr; }
+      .stats-grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Instant Navigation Toolbar -->
+  <div class="preview-banner">
+    <div>
+      <span class="preview-pill">INSTANT PREVIEW</span>
+      <span>Live Design & UI Preview (No Node/Vite required)</span>
+    </div>
+    <div class="preview-tabs">
+      <button class="preview-tab-btn active" onclick="showTab('home')">Home / Catalogue</button>
+      <button class="preview-tab-btn" onclick="showTab('details')">Event Details</button>
+      <button class="preview-tab-btn" onclick="showTab('login')">Login / Register</button>
+      <button class="preview-tab-btn" onclick="showTab('admin')">Admin Dashboard</button>
+    </div>
+  </div>
+
+  <!-- Navbar -->
+  <header class="navbar">
+    <div class="brand" onclick="showTab('home')" style="cursor:pointer">
+      <span class="brand-mark">✦</span> EventHub
+    </div>
+    <nav>
+      <a href="javascript:void(0)" onclick="showTab('home')" class="active">Explore Events</a>
+      <a href="javascript:void(0)" onclick="showTab('admin')">Admin Portal</a>
+    </nav>
+    <div class="nav-actions">
+      <a href="javascript:void(0)" onclick="showTab('login')" class="nav-login">Sign in</a>
+      <button class="btn btn-primary btn-small" onclick="showTab('login')">Create account</button>
+    </div>
+  </header>
+
+  <!-- TAB 1: HOME PAGE -->
+  <div id="tab-home" class="view-container active-view">
+    <section class="hero">
+      <div class="hero-content">
+        <span class="eyebrow">DISCOVER · CONNECT · EXPERIENCE</span>
+        <h1>Find your next<br/><span>great experience.</span></h1>
+        <p>Discover inspiring events, meet new people and reserve your place in just a few clicks.</p>
+        <a class="btn btn-light" href="#events">Explore events <span>↓</span></a>
+      </div>
+      <div class="hero-decoration">
+        <div class="hero-circle">✦</div>
+        <div class="hero-note">Your next<br/>experience<br/><strong>starts here.</strong></div>
+      </div>
+    </section>
+
+    <section class="content-section" id="events">
+      <div class="section-heading">
+        <div>
+          <span class="eyebrow dark">WHAT'S HAPPENING</span>
+          <h2>Explore upcoming events</h2>
+          <p>Find an event that matches your interests.</p>
+        </div>
+        <div class="search-box">
+          <span>⌕</span>
+          <input id="searchInput" oninput="filterEvents()" placeholder="Search events, categories, venues..." />
+        </div>
+      </div>
+
+      <!-- Category Filter Pills -->
+      <div class="category-filter-bar">
+        <button class="category-filter-btn active" onclick="setCategoryFilter('All', this)">All</button>
+        <button class="category-filter-btn" onclick="setCategoryFilter('Technology', this)">Technology</button>
+        <button class="category-filter-btn" onclick="setCategoryFilter('Business', this)">Business</button>
+        <button class="category-filter-btn" onclick="setCategoryFilter('Arts', this)">Arts</button>
+        <button class="category-filter-btn" onclick="setCategoryFilter('General', this)">General</button>
+      </div>
+
+      <div class="event-grid" id="eventsGrid">
+        <!-- Event 1 -->
+        <article class="event-card" data-title="technology innovation summit lagos" data-category="Technology">
+          <div class="event-image-wrap" onclick="showTab('details')" style="cursor:pointer">
+            <img src="https://images.unsplash.com/photo-1540575467063-178a50c2df87?w=1200" alt="Tech" class="event-image" />
+            <span class="category-pill">Technology</span>
+          </div>
+          <div class="event-card-body">
+            <div class="event-date-small">Feb 20, 2027 · 9:00 AM</div>
+            <h3><a href="javascript:void(0)" onclick="showTab('details')">Technology Innovation Summit</a></h3>
+            <p>A gathering of technology enthusiasts, developers and innovators to discuss emerging digital solutions.</p>
+            <div class="event-card-footer">
+              <span>📍 Civic Centre, Lagos</span>
+              <span>250 spots left</span>
+            </div>
+            <a class="text-link" onclick="showTab('details')">View event →</a>
+          </div>
+        </article>
+
+        <!-- Event 2 -->
+        <article class="event-card" data-title="entrepreneurship business workshop ikeja" data-category="Business">
+          <div class="event-image-wrap" onclick="showTab('details')" style="cursor:pointer">
+            <img src="https://images.unsplash.com/photo-1517245386807-bb43f82c33c4?w=1200" alt="Business" class="event-image" />
+            <span class="category-pill">Business</span>
+          </div>
+          <div class="event-card-body">
+            <div class="event-date-small">Mar 12, 2027 · 10:00 AM</div>
+            <h3><a href="javascript:void(0)" onclick="showTab('details')">Entrepreneurship & Business Workshop</a></h3>
+            <p>Practical sessions on starting, managing and growing a sustainable business with industry leaders.</p>
+            <div class="event-card-footer">
+              <span>📍 Conference Hall, Ikeja</span>
+              <span>120 spots left</span>
+            </div>
+            <a class="text-link" onclick="showTab('details')">View event →</a>
+          </div>
+        </article>
+
+        <!-- Event 3 -->
+        <article class="event-card" data-title="creative arts culture festival freedom park" data-category="Arts">
+          <div class="event-image-wrap" onclick="showTab('details')" style="cursor:pointer">
+            <img src="https://images.unsplash.com/photo-1501386761578-eac5c94b800a?w=1200" alt="Arts" class="event-image" />
+            <span class="category-pill">Arts</span>
+          </div>
+          <div class="event-card-body">
+            <div class="event-date-small">Apr 5, 2027 · 12:00 PM</div>
+            <h3><a href="javascript:void(0)" onclick="showTab('details')">Creative Arts and Culture Festival</a></h3>
+            <p>An event celebrating creativity, music, visual arts and local culture in a beautiful open park setting.</p>
+            <div class="event-card-footer">
+              <span>📍 Freedom Park, Lagos</span>
+              <span>400 spots left</span>
+            </div>
+            <a class="text-link" onclick="showTab('details')">View event →</a>
+          </div>
+        </article>
+      </div>
+    </section>
+
+    <section class="callout">
+      <div>
+        <span class="eyebrow">HAVE SOMETHING TO SHARE?</span>
+        <h2>Bring people together.</h2>
+        <p>Event organisers can manage their events and registrations from one central dashboard.</p>
+      </div>
+      <span class="callout-icon">✳</span>
+    </section>
+  </div>
+
+  <!-- TAB 2: EVENT DETAILS PAGE -->
+  <div id="tab-details" class="view-container">
+    <div class="detail-page">
+      <span class="back-link" onclick="showTab('home')">← Back to events catalogue</span>
+      <img src="https://images.unsplash.com/photo-1540575467063-178a50c2df87?w=1200" class="detail-image" alt="Event Banner">
+      <div class="detail-layout">
+        <div class="detail-main">
+          <span class="category-pill static-pill">Technology</span>
+          <h1>Technology Innovation Summit</h1>
+          <p class="detail-description">
+            A gathering of technology enthusiasts, developers and innovators to discuss emerging digital solutions, artificial intelligence, and cloud scale architectures. Connect with industry founders, join interactive breakout workshops, and explore cutting-edge product demos.
+          </p>
+
+          <h2>Location & Time</h2>
+          <div style="display:grid; gap: 15px; margin-top: 15px; font-size: 14px;">
+            <div><strong>📅 Date:</strong> February 20, 2027 at 9:00 AM</div>
+            <div><strong>📍 Venue:</strong> Civic Centre, Ozumba Mbadiwe Ave, Victoria Island, Lagos</div>
+            <div><strong>⏳ Registration Deadline:</strong> February 15, 2027</div>
+          </div>
+        </div>
+
+        <div class="register-panel">
+          <h2>Registration</h2>
+          <div class="spots">
+            <strong>250</strong>
+            <span>spots remaining<br>out of 250</span>
+          </div>
+          <div class="capacity-track">
+            <span style="width: 15%;"></span>
+          </div>
+          <button class="btn btn-primary btn-full" onclick="openTicketModal('Technology Innovation Summit', 'Feb 20, 2027 at 9:00 AM', 'Civic Centre, Lagos', 'Technology')">
+            🎟️ Register & Get QR Ticket
+          </button>
+          <p style="font-size: 11px; color: var(--muted); margin-top: 15px; line-height: 1.5;">
+            Registration is free. You will receive an instant digital admission pass with QR code upon booking.
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TAB 3: AUTH (LOGIN & REGISTER) -->
+  <div id="tab-login" class="view-container">
+    <div class="auth-page">
+      <div class="auth-card">
+        <div class="brand" style="justify-content:center; margin-bottom: 20px;">
+          <span class="brand-mark">✦</span> EventHub
+        </div>
+        <h1 style="text-align:center;">Welcome back</h1>
+        <p style="text-align:center;">Sign in with your credentials to manage your bookings and profile.</p>
+
+        <form class="form-stack" onsubmit="event.preventDefault(); alert('In the live server, this authenticates against bcrypt hashes and issues a JWT token.');">
+          <label>
+            Email address
+            <input type="email" placeholder="you@example.com" value="admin@example.com" required />
+          </label>
+          <label>
+            Password
+            <input type="password" value="••••••••" required />
+          </label>
+          <button type="submit" class="btn btn-primary btn-full" style="margin-top: 10px;">Sign in</button>
+        </form>
+
+        <div style="margin-top: 25px; text-align: center; font-size: 12px; color: var(--muted);">
+          <span>Default Admin: <strong>admin@example.com</strong> (Password: Admin123!)</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TAB 4: ADMIN DASHBOARD -->
+  <div id="tab-admin" class="view-container">
+    <div class="content-section">
+      <span class="eyebrow dark">ADMINISTRATOR PORTAL</span>
+      <h1 style="font: 800 32px Manrope; margin: 10px 0;">Dashboard & Event Management</h1>
+      <p style="color: var(--muted);">Monitor registered attendees, event capacity, and manage listings.</p>
+
+      <div class="stats-grid">
+        <div class="stat-card">
+          <small>TOTAL EVENTS</small>
+          <strong>3</strong>
+        </div>
+        <div class="stat-card">
+          <small>CONFIRMED REGISTRATIONS</small>
+          <strong>48</strong>
+        </div>
+        <div class="stat-card">
+          <small>TOTAL CAPACITY</small>
+          <strong>770</strong>
+        </div>
+      </div>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Event Title</th>
+              <th>Date & Time</th>
+              <th>Venue</th>
+              <th>Capacity</th>
+              <th>Registrations</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Technology Innovation Summit</strong></td>
+              <td>Feb 20, 2027 09:00</td>
+              <td>Civic Centre, Lagos</td>
+              <td>250</td>
+              <td>24 booked</td>
+              <td><button class="btn btn-outline btn-small" onclick="openTicketModal('Technology Innovation Summit', 'Feb 20, 2027 09:00', 'Civic Centre, Lagos', 'Technology')">🎟️ View Pass</button></td>
+            </tr>
+            <tr>
+              <td><strong>Entrepreneurship & Business Workshop</strong></td>
+              <td>Mar 12, 2027 10:00</td>
+              <td>Conference Hall, Ikeja</td>
+              <td>120</td>
+              <td>16 booked</td>
+              <td><button class="btn btn-outline btn-small" onclick="openTicketModal('Entrepreneurship & Business Workshop', 'Mar 12, 2027 10:00', 'Conference Hall, Ikeja', 'Business')">🎟️ View Pass</button></td>
+            </tr>
+            <tr>
+              <td><strong>Creative Arts and Culture Festival</strong></td>
+              <td>Apr 5, 2027 12:00</td>
+              <td>Freedom Park, Lagos</td>
+              <td>400</td>
+              <td>8 booked</td>
+              <td><button class="btn btn-outline btn-small" onclick="openTicketModal('Creative Arts and Culture Festival', 'Apr 5, 2027 12:00', 'Freedom Park, Lagos', 'Arts')">🎟️ View Pass</button></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- TICKET PASS & QR CODE MODAL -->
+  <div id="ticketModal" class="ticket-modal-overlay" onclick="closeTicketModal()">
+    <div class="ticket-modal-content" onclick="event.stopPropagation()">
+      <button class="ticket-modal-close" onclick="closeTicketModal()">✕</button>
+
+      <div class="ticket-card printable-ticket">
+        <div class="ticket-header">
+          <div class="ticket-brand">
+            <span class="brand-mark">✦</span>
+            <div>
+              <strong>EventHub Admission Pass</strong>
+              <span>Official Digital Ticket</span>
+            </div>
+          </div>
+          <span class="ticket-badge">CONFIRMED</span>
+        </div>
+
+        <div class="ticket-body">
+          <h2 id="modalEventTitle" class="ticket-event-title">Technology Innovation Summit</h2>
+          <div id="modalCategoryTag" class="ticket-category-tag">Technology</div>
+
+          <div class="ticket-details-grid">
+            <div>
+              <small>DATE & TIME</small>
+              <strong id="modalDate">Feb 20, 2027 · 9:00 AM</strong>
+            </div>
+            <div>
+              <small>VENUE</small>
+              <strong id="modalVenue">Civic Centre, Lagos</strong>
+            </div>
+            <div>
+              <small>ATTENDEE</small>
+              <strong>System Administrator</strong>
+              <span>admin@example.com</span>
+            </div>
+            <div>
+              <small>REFERENCE CODE</small>
+              <strong class="ticket-code" id="modalRef">EH-001-0042-PASS</strong>
+            </div>
+          </div>
+
+          <div class="ticket-qr-section">
+            <div class="ticket-qr-frame">
+              <img id="modalQrImg" src="https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=EVENTHUB_PASS_DEMO" class="ticket-qr-img" alt="QR Code" />
+            </div>
+            <p>Scan this QR code at the event entrance for fast verification.</p>
+          </div>
+        </div>
+
+        <div class="ticket-actions no-print">
+          <button class="btn btn-primary btn-full" onclick="window.print()">🖨️ Print / Save Ticket Pass</button>
+          <button class="btn btn-outline btn-full" onclick="closeTicketModal()" style="margin-top: 8px;">Close</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <footer class="footer">
+    <strong>EventHub</strong>
+    <span>Online Event Management and Registration System</span>
+    <span>© 2027 EventHub</span>
+  </footer>
+
+  <script>
+    let currentCategory = 'All';
+
+    function showTab(tabName) {
+      document.querySelectorAll('.view-container').forEach(el => el.classList.remove('active-view'));
+      document.querySelectorAll('.preview-tab-btn').forEach(el => el.classList.remove('active'));
+      
+      const tabEl = document.getElementById('tab-' + tabName);
+      if (tabEl) tabEl.classList.add('active-view');
+
+      const buttons = document.querySelectorAll('.preview-tab-btn');
+      if (tabName === 'home' && buttons[0]) buttons[0].classList.add('active');
+      if (tabName === 'details' && buttons[1]) buttons[1].classList.add('active');
+      if (tabName === 'login' && buttons[2]) buttons[2].classList.add('active');
+      if (tabName === 'admin' && buttons[3]) buttons[3].classList.add('active');
+
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    function setCategoryFilter(category, btn) {
+      currentCategory = category;
+      document.querySelectorAll('.category-filter-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      filterEvents();
+    }
+
+    function filterEvents() {
+      const q = (document.getElementById('searchInput').value || '').toLowerCase();
+      const cards = document.querySelectorAll('#eventsGrid .event-card');
+      
+      cards.forEach(card => {
+        const text = (card.getAttribute('data-title') || '').toLowerCase();
+        const cat = card.getAttribute('data-category') || '';
+        const matchSearch = text.includes(q);
+        const matchCategory = currentCategory === 'All' || cat.toLowerCase() === currentCategory.toLowerCase();
+
+        if (matchSearch && matchCategory) {
+          card.style.display = 'block';
+        } else {
+          card.style.display = 'none';
+        }
+      });
+    }
+
+    function openTicketModal(title, date, venue, category) {
+      document.getElementById('modalEventTitle').textContent = title;
+      document.getElementById('modalDate').textContent = date;
+      document.getElementById('modalVenue').textContent = venue;
+      document.getElementById('modalCategoryTag').textContent = category;
+      
+      const code = 'EH-' + Math.floor(100 + Math.random() * 900) + '-' + Math.floor(1000 + Math.random() * 9000);
+      document.getElementById('modalRef').textContent = code;
+
+      const qrPayload = encodeURIComponent(`EVENTHUB:${code}|${title}|${date}|${venue}`);
+      document.getElementById('modalQrImg').src = `https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=${qrPayload}`;
+
+      document.getElementById('ticketModal').classList.add('open');
+    }
+
+    function closeTicketModal() {
+      document.getElementById('ticketModal').classList.remove('open');
+    }
+  </script>
+</body>
+</html>

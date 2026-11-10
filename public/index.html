@@ -1,0 +1,2351 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>EventHub Nigeria | Multi-Page Event Management System</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      font-family: 'DM Sans', sans-serif;
+      color: #17233b;
+      background: #f8fafc;
+      --navy: #14213d;
+      --blue: #3157d5;
+      --blue-light: #eff4ff;
+      --muted: #64748b;
+      --line: #e2e8f0;
+      --soft: #f8fafc;
+      --whatsapp: #25D366;
+      --sidebar-width: 250px;
+    }
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body { margin: 0; min-width: 320px; background: #fff; }
+    a { color: inherit; text-decoration: none; cursor: pointer; }
+    button, input, textarea, select { font: inherit; }
+    button { cursor: pointer; }
+
+    /* Toast notification */
+    #toast {
+      position: fixed;
+      bottom: 25px;
+      right: 25px;
+      background: #0f172a;
+      color: #fff;
+      padding: 12px 20px;
+      border-radius: 10px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.25);
+      font-size: 13px;
+      font-weight: 600;
+      display: none;
+      align-items: center;
+      gap: 10px;
+      z-index: 3000;
+      animation: fadeIn 0.25s ease;
+    }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+    /* Public Header / Navbar */
+    .navbar {
+      height: 76px;
+      padding: 0 max(5vw, 24px);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid var(--line);
+      background: #fff;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+    .brand {
+      font: 800 22px Manrope, sans-serif;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      color: var(--navy);
+      cursor: pointer;
+    }
+    .brand-mark {
+      width: 32px;
+      height: 32px;
+      border-radius: 10px;
+      background: var(--blue);
+      color: white;
+      display: grid;
+      place-items: center;
+      font-size: 19px;
+    }
+    .navbar nav {
+      display: flex;
+      gap: 24px;
+      color: #64748b;
+      font-size: 14px;
+      font-weight: 600;
+    }
+    .navbar nav a {
+      padding: 8px 12px;
+      border-radius: 6px;
+      transition: 0.2s;
+    }
+    .navbar nav a.active {
+      color: var(--blue);
+      background: var(--blue-light);
+    }
+    .navbar nav a:hover {
+      color: var(--blue);
+    }
+    .nav-actions {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      font-size: 14px;
+    }
+    .welcome { color: var(--muted); font-weight: 500; font-size: 13px; }
+    .nav-login { font-weight: 700; color: var(--navy); }
+
+    .admin-pill-link {
+      background: #fef3c7;
+      color: #92400e;
+      border: 1px solid #fde68a;
+      padding: 5px 12px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 700;
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+    }
+
+    .btn {
+      border: 0;
+      border-radius: 8px;
+      padding: 10px 18px;
+      font-weight: 700;
+      display: inline-flex;
+      justify-content: center;
+      align-items: center;
+      gap: 8px;
+      transition: .2s;
+      cursor: pointer;
+    }
+    .btn-primary { background: var(--blue); color: #fff; }
+    .btn-primary:hover { background: #2445b7; transform: translateY(-1px); }
+    .btn-light { background: #fff; color: var(--navy); margin-top: 14px; }
+    .btn-outline { border: 1px solid #cbd5e1; background: #fff; color: var(--navy); }
+    .btn-outline:hover { border-color: var(--blue); color: var(--blue); }
+    .btn-whatsapp { background: var(--whatsapp); color: #fff; }
+    .btn-whatsapp:hover { background: #1eb956; }
+    .btn-danger { background: #fff1f0; color: #c43e37; border: 1px solid #fed7d7; }
+    .btn-small { padding: 6px 12px; font-size: 12px; }
+    .btn-full { width: 100%; }
+
+    /* Breadcrumbs Bar */
+    .breadcrumbs {
+      background: #f8fafc;
+      border-bottom: 1px solid var(--line);
+      padding: 12px max(5vw, 24px);
+      font-size: 12px;
+      color: var(--muted);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .breadcrumbs a { color: var(--blue); font-weight: 600; }
+    .breadcrumbs span.current { color: var(--navy); font-weight: 700; }
+
+    /* Hero Section */
+    .hero {
+      background: #14213d;
+      color: #fff;
+      min-height: 420px;
+      padding: 70px max(9vw, 28px);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      overflow: hidden;
+      position: relative;
+    }
+    .hero:after {
+      content: "";
+      position: absolute;
+      width: 540px;
+      height: 540px;
+      border: 1px solid #ffffff18;
+      border-radius: 50%;
+      right: 8%;
+      top: -190px;
+      box-shadow: 0 0 0 65px #ffffff08, 0 0 0 130px #ffffff05;
+    }
+    .hero-content { position: relative; z-index: 1; max-width: 570px; }
+    .eyebrow { font-size: 10px; letter-spacing: 2px; font-weight: 700; color: #aab9ff; }
+    .eyebrow.dark { color: var(--blue); }
+    .hero h1 {
+      font: 800 clamp(38px, 5vw, 56px)/1.15 Manrope, sans-serif;
+      letter-spacing: -1.5px;
+      margin: 18px 0;
+    }
+    .hero h1 span { color: #aab9ff; }
+    .hero p { max-width: 480px; color: #c4ccdc; line-height: 1.7; font-size: 15px; }
+    .hero-decoration {
+      width: 250px;
+      height: 250px;
+      border: 1px solid #ffffff40;
+      border-radius: 50%;
+      display: grid;
+      place-items: center;
+      position: relative;
+      z-index: 1;
+      margin-right: 5%;
+    }
+    .hero-circle { font-size: 90px; color: #aab9ff; }
+    .hero-note {
+      position: absolute;
+      background: #fff;
+      color: var(--navy);
+      padding: 16px 20px;
+      border-radius: 12px;
+      right: -30px;
+      bottom: 8px;
+      line-height: 1.45;
+      box-shadow: 0 12px 40px rgba(0,0,0,0.25);
+      font-size: 13px;
+    }
+    .hero-note strong { color: var(--blue); }
+
+    .content-section { padding: 60px max(7vw, 24px); }
+    .section-heading {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-end;
+      gap: 25px;
+      margin-bottom: 22px;
+    }
+    .section-heading h2, .callout h2 {
+      font: 800 30px Manrope, sans-serif;
+      letter-spacing: -.7px;
+      margin: 8px 0;
+    }
+    .section-heading p, .callout p, .page-section>p { color: var(--muted); margin: 0; }
+    .search-box {
+      height: 46px;
+      width: min(360px, 100%);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      padding: 0 14px;
+      gap: 10px;
+      color: #8b95a8;
+      background: #fff;
+    }
+    .search-box input { border: 0; outline: 0; width: 100%; font-size: 13px; }
+
+    /* Category Filter Pills */
+    .category-filter-bar {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 25px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+    .category-filter-btn {
+      padding: 7px 16px;
+      border-radius: 20px;
+      border: 1px solid var(--line);
+      background: #fff;
+      color: var(--muted);
+      font-size: 13px;
+      font-weight: 600;
+      transition: .2s;
+    }
+    .category-filter-btn:hover { border-color: var(--blue); color: var(--blue); }
+    .category-filter-btn.active { background: var(--blue); color: #fff; border-color: var(--blue); }
+
+    .event-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 24px;
+    }
+    .event-card {
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      overflow: hidden;
+      background: #fff;
+      transition: .2s;
+      display: flex;
+      flex-direction: column;
+      position: relative;
+    }
+    .event-card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 14px 35px rgba(24, 41, 75, 0.09);
+    }
+    .event-image-wrap {
+      height: 205px;
+      display: block;
+      position: relative;
+      overflow: hidden;
+      background: #e9edf6;
+      cursor: pointer;
+    }
+    .event-image { width: 100%; height: 100%; object-fit: cover; transition: .3s; }
+    .event-card:hover .event-image { transform: scale(1.04); }
+    
+    .category-pill {
+      position: absolute;
+      top: 14px;
+      left: 14px;
+      background: #fff;
+      color: var(--blue);
+      padding: 5px 10px;
+      border-radius: 20px;
+      font-size: 11px;
+      font-weight: 700;
+    }
+    .favorite-btn {
+      position: absolute;
+      top: 14px;
+      right: 14px;
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.9);
+      border: none;
+      display: grid;
+      place-items: center;
+      font-size: 15px;
+      cursor: pointer;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.12);
+      transition: 0.2s;
+    }
+    .favorite-btn:hover { transform: scale(1.1); background: #fff; }
+    .favorite-btn.saved { color: #e11d48; }
+
+    .event-card-body { padding: 20px; display: flex; flex-direction: column; flex: 1; }
+    .event-badge-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+    .event-date-small { font-size: 11px; color: var(--blue); font-weight: 700; }
+    .event-price-badge { background: #eaf8f0; color: #18764b; font-size: 10px; font-weight: 700; padding: 2px 8px; border-radius: 10px; }
+    
+    .event-card h3 { font: 700 18px/1.35 Manrope, sans-serif; margin: 6px 0; }
+    .event-card p {
+      font-size: 13px;
+      color: var(--muted);
+      line-height: 1.6;
+      min-height: 58px;
+      display: -webkit-box;
+      -webkit-line-clamp: 3;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+    .event-card-footer {
+      display: flex;
+      justify-content: space-between;
+      gap: 8px;
+      color: #7c879a;
+      font-size: 11px;
+      border-top: 1px solid var(--line);
+      padding: 12px 0;
+      margin-top: auto;
+    }
+    .text-link { font-size: 13px; font-weight: 700; color: var(--blue); cursor: pointer; display: inline-flex; align-items: center; gap: 4px; }
+
+    .callout {
+      margin: 0 max(7vw, 24px) 70px;
+      padding: 35px 42px;
+      background: #f0f3ff;
+      border-radius: 15px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .callout p { font-size: 13px; }
+    .callout-icon { font-size: 70px; color: #8197ed; }
+
+    .footer {
+      border-top: 1px solid var(--line);
+      padding: 25px max(7vw, 24px);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      color: #7e899c;
+      font-size: 12px;
+      background: #fff;
+    }
+    .footer strong { font: 800 16px Manrope; color: var(--navy); }
+
+    /* Separate Page Views */
+    .page-view { display: none; }
+    .page-view.active-page { display: block; }
+
+    /* FOCUSED AUTH PAGE (NO HEADER & NO FOOTER) */
+    .auth-page-clean {
+      min-height: 100vh;
+      background: #0f172a;
+      display: grid;
+      place-items: center;
+      padding: 30px 20px;
+      background-image: radial-gradient(rgba(49, 87, 213, 0.15) 1px, transparent 1px);
+      background-size: 24px 24px;
+    }
+    .auth-clean-card {
+      width: min(440px, 100%);
+      background: #fff;
+      border-radius: 18px;
+      padding: 40px;
+      box-shadow: 0 25px 60px rgba(0, 0, 0, 0.35);
+      position: relative;
+    }
+    .auth-back-home {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--muted);
+      margin-bottom: 24px;
+      transition: 0.2s;
+    }
+    .auth-back-home:hover { color: var(--blue); }
+    .auth-clean-card h1 { font: 800 28px Manrope; margin: 8px 0; color: var(--navy); }
+    .auth-clean-card > p { font-size: 13px; color: var(--muted); line-height: 1.6; margin-bottom: 22px; }
+    .form-stack { display: grid; gap: 16px; }
+    .form-stack label { font-size: 12px; font-weight: 700; color: #334155; display: grid; gap: 6px; }
+    .form-stack input {
+      border: 1px solid #cbd5e1;
+      border-radius: 8px;
+      padding: 12px 14px;
+      outline: none;
+      width: 100%;
+      font-size: 14px;
+    }
+    .form-stack input:focus { border-color: var(--blue); box-shadow: 0 0 0 3px rgba(49, 87, 213, 0.12); }
+
+    /* Event Details Page */
+    .detail-page { padding: 35px max(9vw, 24px) 80px; }
+    .detail-image { width: 100%; height: 360px; object-fit: cover; border-radius: 14px; }
+    .detail-layout { display: grid; grid-template-columns: 1fr 340px; gap: 48px; margin-top: 35px; }
+    .static-pill { position: static; display: inline-block; background: #eef1ff; }
+    .detail-main h1 { font: 800 36px Manrope; letter-spacing: -1px; margin: 14px 0; }
+    .detail-description { color: var(--muted); line-height: 1.8; font-size: 15px; }
+    
+    .share-buttons-row {
+      display: flex;
+      gap: 10px;
+      margin-top: 15px;
+      flex-wrap: wrap;
+    }
+
+    .register-panel {
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      padding: 24px;
+      height: max-content;
+      box-shadow: 0 10px 35px rgba(27, 43, 77, 0.05);
+      background: #fff;
+    }
+    .register-panel h2 { font: 700 20px Manrope; margin: 0; }
+    .spots { display: flex; align-items: center; gap: 12px; margin: 20px 0; }
+    .spots strong { font: 800 36px Manrope; color: var(--blue); }
+    .spots span { font-size: 12px; color: var(--muted); line-height: 1.5; }
+    .capacity-track { height: 6px; border-radius: 9px; background: #edf0f6; margin-bottom: 20px; overflow: hidden; }
+    .capacity-track span { height: 100%; display: block; background: var(--blue); transition: width 0.3s; }
+
+    /* MODERN FULL-SCREEN SAAS DASHBOARD (NO PUBLIC HEADER) */
+    .dashboard-layout {
+      display: grid;
+      grid-template-columns: 270px 1fr;
+      height: 100vh;
+      width: 100vw;
+      background: #f8fafc;
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      z-index: 500;
+      overflow: hidden;
+    }
+    .dashboard-sidebar {
+      background: #0f172a;
+      color: #f8fafc;
+      padding: 20px 16px 20px;
+      display: flex;
+      flex-direction: column;
+      border-right: 1px solid #1e293b;
+      height: 100vh;
+      overflow-y: auto;
+      flex-shrink: 0;
+    }
+    .dashboard-sidebar::-webkit-scrollbar {
+      width: 4px;
+    }
+    .dashboard-sidebar::-webkit-scrollbar-thumb {
+      background: #334155;
+      border-radius: 4px;
+    }
+    .dashboard-sidebar::-webkit-scrollbar-track {
+      background: transparent;
+    }
+
+    .sidebar-brand-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 6px 8px 18px;
+      margin-bottom: 16px;
+      border-bottom: 1px solid #1e293b;
+      cursor: pointer;
+    }
+    .sidebar-brand-mark {
+      width: 36px;
+      height: 36px;
+      border-radius: 10px;
+      background: var(--blue);
+      color: white;
+      display: grid;
+      place-items: center;
+      font-weight: 800;
+      font-size: 20px;
+      flex-shrink: 0;
+      box-shadow: 0 4px 12px rgba(49, 87, 213, 0.4);
+    }
+    .sidebar-brand-title {
+      font: 800 18px Manrope, sans-serif;
+      color: #fff;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      line-height: 1.1;
+    }
+    .sidebar-brand-badge {
+      font-size: 10px;
+      font-weight: 800;
+      background: #1e293b;
+      color: #94a3b8;
+      padding: 2px 7px;
+      border-radius: 6px;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+      border: 1px solid #334155;
+      margin-top: 4px;
+      display: inline-block;
+    }
+
+    .sidebar-user-card {
+      padding: 14px;
+      background: #1e293b;
+      border-radius: 12px;
+      margin-bottom: 20px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      border: 1px solid #334155;
+    }
+    .sidebar-avatar {
+      width: 40px;
+      height: 40px;
+      border-radius: 10px;
+      background: var(--blue);
+      color: white;
+      font-weight: 800;
+      font-size: 16px;
+      display: grid;
+      place-items: center;
+      flex-shrink: 0;
+    }
+    .sidebar-avatar svg {
+      width: 20px;
+      height: 20px;
+      stroke: #fff;
+    }
+    .sidebar-user-card strong { display: block; font-size: 13px; color: #fff; line-height: 1.3; }
+    .sidebar-user-card span { font-size: 11px; color: #94a3b8; display: block; overflow: hidden; text-overflow: ellipsis; max-width: 150px; }
+    .sidebar-role-badge {
+      display: inline-block;
+      font-size: 9px;
+      font-weight: 800;
+      padding: 2px 7px;
+      border-radius: 4px;
+      background: #3b82f6;
+      color: #fff;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-top: 4px;
+    }
+
+    .sidebar-nav-title {
+      font-size: 10px;
+      font-weight: 800;
+      letter-spacing: 1.2px;
+      color: #64748b;
+      text-transform: uppercase;
+      padding: 0 12px;
+      margin: 16px 0 8px;
+    }
+    .sidebar-nav-list {
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+    }
+    .sidebar-nav-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 10px 14px;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 600;
+      color: #94a3b8;
+      transition: all 0.2s ease;
+      cursor: pointer;
+    }
+    .sidebar-nav-item svg {
+      width: 18px;
+      height: 18px;
+      stroke: currentColor;
+      stroke-width: 2;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+      fill: none;
+      flex-shrink: 0;
+      transition: transform 0.2s;
+    }
+    .sidebar-nav-item:hover {
+      background: #1e293b;
+      color: #fff;
+    }
+    .sidebar-nav-item:hover svg {
+      transform: scale(1.08);
+      stroke: #60a5fa;
+    }
+    .sidebar-nav-item.active {
+      background: var(--blue);
+      color: #fff;
+      box-shadow: 0 4px 14px rgba(49, 87, 213, 0.4);
+    }
+    .sidebar-nav-item.active svg {
+      stroke: #fff;
+    }
+
+    .demo-auth-pill {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      width: 100%;
+      background: #f8fafc;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      padding: 10px 12px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .demo-auth-pill:hover {
+      background: #eff4ff;
+      border-color: #bfdbfe;
+    }
+
+    .dashboard-main {
+      height: 100vh;
+      overflow-y: auto;
+      background: #f8fafc;
+      display: flex;
+      flex-direction: column;
+      min-width: 0;
+    }
+    .dashboard-topbar {
+      height: 72px;
+      background: #fff;
+      border-bottom: 1px solid var(--line);
+      padding: 0 max(4vw, 28px);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: sticky;
+      top: 0;
+      z-index: 40;
+      flex-shrink: 0;
+    }
+    .dashboard-topbar-welcome {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+    .dashboard-topbar-welcome h2 {
+      font: 800 18px Manrope, sans-serif;
+      margin: 0;
+      color: var(--navy);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .dashboard-topbar-welcome span {
+      font-size: 12px;
+      color: var(--muted);
+    }
+    .dashboard-body {
+      padding: 30px max(4vw, 28px) 60px;
+      flex: 1;
+    }
+    .dashboard-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 28px;
+      padding-bottom: 20px;
+      border-bottom: 1px solid var(--line);
+    }
+    .dashboard-header h1 { font: 800 28px Manrope; margin: 0; color: var(--navy); }
+    .dashboard-header p { margin: 4px 0 0; color: var(--muted); font-size: 13px; }
+
+    /* Dashboard Sub-Views */
+    .dash-sub-view { display: none; }
+    .dash-sub-view.active-dash-view { display: block; }
+
+    /* Stats Grid */
+    .stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 18px; margin-bottom: 30px; }
+    .stat-card {
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      padding: 22px;
+      background: #fff;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.02);
+    }
+    .stat-card small { color: #64748b; font-size: 10px; font-weight: 800; letter-spacing: 1px; }
+    .stat-card strong { display: block; font: 800 32px Manrope; margin-top: 8px; color: var(--navy); }
+
+    /* Tables & Action Buttons */
+    .table-wrap {
+      overflow-x: auto;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      background: #fff;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.02);
+    }
+    table { border-collapse: collapse; width: 100%; font-size: 13px; text-align: left; }
+    th { background: #f8fafc; color: #475569; font-size: 11px; text-transform: uppercase; letter-spacing: .7px; padding: 14px 18px; }
+    td { padding: 14px 18px; border-bottom: 1px solid var(--line); }
+    td small { display: block; color: #64748b; margin-top: 4px; font-size: 11px; }
+    .status { padding: 4px 10px; border-radius: 20px; text-transform: capitalize; font-size: 10px; font-weight: 700; }
+    .status.confirmed { background: #eaf8f0; color: #18764b; }
+    .status.cancelled { background: #fff1f0; color: #b83232; }
+    .role-tag { padding: 3px 8px; border-radius: 12px; font-size: 10px; font-weight: 800; text-transform: uppercase; }
+    .role-tag.admin { background: #fef3c7; color: #92400e; }
+    .role-tag.user { background: #f1f5f9; color: #475569; }
+
+    /* Forms */
+    .admin-form-section {
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      padding: 28px;
+      background: #fff;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.02);
+    }
+    .admin-form { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; margin-top: 20px; }
+    .admin-form .wide { grid-column: 1 / -1; }
+    .admin-form label { font-size: 12px; font-weight: 700; color: #334155; display: grid; gap: 6px; }
+    .admin-form input, .admin-form textarea, .admin-form select {
+      border: 1px solid #cbd5e1;
+      border-radius: 8px;
+      padding: 11px 13px;
+      outline: none;
+      width: 100%;
+      font-size: 13px;
+    }
+    .admin-form input:focus, .admin-form textarea:focus { border-color: var(--blue); }
+
+    .state-message, .empty-state { text-align: center; padding: 50px 20px; color: var(--muted); }
+    .empty-state h3 { color: var(--navy); }
+    .error-text, .form-error { color: #b83232; background: #fff1f0; padding: 11px 14px; border-radius: 8px; font-size: 13px; margin: 12px 0; }
+    .success-message { color: #18764b; background: #eaf8f0; padding: 11px 14px; border-radius: 8px; font-size: 13px; margin: 12px 0; }
+
+    /* Ticket Modal & Admission Pass */
+    .ticket-modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(15, 23, 42, 0.75);
+      backdrop-filter: blur(4px);
+      display: none;
+      place-items: center;
+      z-index: 2000;
+      padding: 20px;
+    }
+    .ticket-modal-overlay.open { display: grid; }
+    .ticket-modal-content {
+      position: relative;
+      width: min(460px, 100%);
+      margin: auto;
+    }
+    .ticket-modal-close {
+      position: absolute;
+      top: -12px;
+      right: -12px;
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      background: #fff;
+      border: 1px solid var(--line);
+      font-size: 14px;
+      display: grid;
+      place-items: center;
+      cursor: pointer;
+      z-index: 10;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    }
+    .ticket-card {
+      background: #fff;
+      border-radius: 16px;
+      overflow: hidden;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.25);
+      border: 1px solid var(--line);
+    }
+    .ticket-header {
+      background: #14213d;
+      color: #fff;
+      padding: 20px 24px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .ticket-brand { display: flex; align-items: center; gap: 12px; }
+    .ticket-brand strong { display: block; font: 700 15px Manrope; color: #fff; }
+    .ticket-brand span { font-size: 11px; color: #aab9ff; }
+    .ticket-badge {
+      background: #eaf8f0;
+      color: #18764b;
+      font-size: 11px;
+      font-weight: 800;
+      padding: 4px 10px;
+      border-radius: 12px;
+      letter-spacing: 0.5px;
+    }
+    .ticket-body { padding: 24px; }
+    .ticket-event-title { font: 800 22px/1.3 Manrope; color: var(--navy); margin: 0 0 8px; }
+    .ticket-category-tag {
+      display: inline-block;
+      background: #eef2ff;
+      color: var(--blue);
+      padding: 4px 10px;
+      border-radius: 12px;
+      font-size: 11px;
+      font-weight: 700;
+      margin-bottom: 18px;
+    }
+    .ticket-details-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+      padding: 16px 0;
+      border-top: 1px dashed var(--line);
+      border-bottom: 1px dashed var(--line);
+    }
+    .ticket-details-grid div { display: grid; gap: 3px; }
+    .ticket-details-grid small { font-size: 10px; font-weight: 700; color: #8791a3; letter-spacing: 0.7px; }
+    .ticket-details-grid strong { font-size: 13px; color: var(--navy); }
+    .ticket-details-grid span { font-size: 12px; color: var(--muted); }
+    .ticket-code { font-family: monospace; font-size: 12px; color: var(--blue); font-weight: 700; }
+    .ticket-qr-section { text-align: center; margin-top: 18px; padding: 12px 0 4px; }
+    .ticket-qr-frame {
+      display: inline-block;
+      padding: 10px;
+      background: #fff;
+      border: 2px solid var(--line);
+      border-radius: 12px;
+      box-shadow: 0 4px 14px rgba(0,0,0,0.06);
+    }
+    .ticket-qr-img { width: 160px; height: 160px; display: block; }
+    .ticket-qr-section p { font-size: 11px; color: var(--muted); margin: 10px 0 0; }
+    .ticket-actions { padding: 0 24px 24px; display: grid; gap: 8px; }
+
+    @media print {
+      body * { visibility: hidden; }
+      .printable-ticket, .printable-ticket * { visibility: visible; }
+      .printable-ticket { position: fixed; left: 0; top: 0; width: 100%; box-shadow: none; border: 1px solid #ccc; }
+      .no-print { display: none !important; }
+    }
+
+    @media (max-width: 900px) {
+      .dashboard-layout { grid-template-columns: 1fr; }
+      .dashboard-sidebar { border-right: none; border-bottom: 1px solid #1e293b; }
+      .stats-grid { grid-template-columns: repeat(2, 1fr); }
+      .event-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .detail-layout { grid-template-columns: 1fr; }
+    }
+    @media (max-width: 650px) {
+      .stats-grid { grid-template-columns: 1fr; }
+      .event-grid { grid-template-columns: 1fr; }
+      .admin-form { grid-template-columns: 1fr; }
+      .admin-form .wide { grid-column: auto; }
+      .navbar { height: auto; padding: 12px 18px; flex-wrap: wrap; gap: 10px; }
+      .navbar nav { width: 100%; order: 3; justify-content: center; gap: 12px; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Toast notification -->
+  <div id="toast"></div>
+
+  <!-- PUBLIC NAVBAR (Clean, no admin clutter) -->
+  <header class="navbar" id="publicNavbar">
+    <div class="brand" onclick="navigate('#/')">
+      <span class="brand-mark">✦</span> EventHub
+    </div>
+    <nav id="navLinks">
+      <a href="#/" id="nav-home" class="active">Explore Events</a>
+      <a href="#/my-events" id="nav-my-events">My Tickets</a>
+    </nav>
+    <div class="nav-actions" id="navActions"></div>
+  </header>
+
+  <!-- BREADCRUMBS BAR -->
+  <div class="breadcrumbs" id="breadcrumbsBar" style="display:none;">
+    <a href="#/">Home</a>
+    <span>›</span>
+    <span id="breadcrumbCurrent" class="current">Page</span>
+  </div>
+
+  <!-- ======================================================== -->
+  <!-- PAGE 1: HOME CATALOGUE (#/) -->
+  <!-- ======================================================== -->
+  <section id="page-home" class="page-view active-page">
+    <section class="hero">
+      <div class="hero-content">
+        <span class="eyebrow">DISCOVER · CONNECT · EXPERIENCE</span>
+        <h1>Nigeria's Premier<br/><span>Events & Conferences.</span></h1>
+        <p>Discover inspiring tech summits, business masterclasses, creative festivals, and networking across Lagos, Abuja, and beyond.</p>
+        <a class="btn btn-light" href="#eventsSection">Explore events <span>↓</span></a>
+      </div>
+      <div class="hero-decoration">
+        <div class="hero-circle">✦</div>
+        <div class="hero-note">Your next<br/>experience<br/><strong>starts here.</strong></div>
+      </div>
+    </section>
+
+    <section class="content-section" id="eventsSection">
+      <div class="section-heading">
+        <div>
+          <span class="eyebrow dark">UPCOMING IN NIGERIA</span>
+          <h2>Explore events catalogue</h2>
+          <p>Find technology summits, business workshops, and creative festivals.</p>
+        </div>
+        <div class="search-box">
+          <span>⌕</span>
+          <input id="searchInput" oninput="handleSearchInput()" placeholder="Search Lagos, Abuja, Tech, Art..." />
+        </div>
+      </div>
+
+      <!-- Category Filter Pills -->
+      <div class="category-filter-bar">
+        <button class="category-filter-btn active" onclick="setCategoryFilter('All', this)">All Events</button>
+        <button class="category-filter-btn" onclick="setCategoryFilter('Technology', this)">Technology</button>
+        <button class="category-filter-btn" onclick="setCategoryFilter('Business', this)">Business</button>
+        <button class="category-filter-btn" onclick="setCategoryFilter('Arts', this)">Arts & Culture</button>
+        <button class="category-filter-btn" onclick="setCategoryFilter('General', this)">General</button>
+        <button class="category-filter-btn" onclick="setCategoryFilter('Saved', this)" style="border-color:#fecdd3; color:#e11d48;">❤️ Saved (<span id="savedCount">0</span>)</button>
+      </div>
+
+      <div id="eventsContainer">
+        <p class="state-message">Loading events from database...</p>
+      </div>
+    </section>
+
+    <section class="callout">
+      <div>
+        <span class="eyebrow">HOSTING AN EVENT IN NIGERIA?</span>
+        <h2>Bring people together seamlessly.</h2>
+        <p>Manage event bookings, attendee caps, and generate digital QR passes with instant verification.</p>
+      </div>
+      <span class="callout-icon">✳</span>
+    </section>
+  </section>
+
+  <!-- ======================================================== -->
+  <!-- PAGE 2: EVENT DETAILS (#/events/:id) -->
+  <!-- ======================================================== -->
+  <section id="page-details" class="page-view">
+    <div class="detail-page" id="eventDetailsContent"></div>
+  </section>
+
+  <!-- ======================================================== -->
+  <!-- PAGE 3: AUTH LOGIN & REGISTER (FOCUSED, NO HEADER/FOOTER) -->
+  <!-- ======================================================== -->
+  <section id="page-auth" class="page-view">
+    <div class="auth-page-clean">
+      <div class="auth-clean-card">
+        <a href="#/" class="auth-back-home">← Back to EventHub</a>
+        
+        <div class="brand" style="margin-bottom: 18px;" onclick="navigate('#/')">
+          <span class="brand-mark">✦</span> EventHub
+        </div>
+        
+        <h1 id="authTitle">Welcome back</h1>
+        <p id="authSubtitle">Sign in with your account to register and manage your admission passes.</p>
+
+        <div id="authError" class="error-text" style="display:none;"></div>
+        <div id="authSuccess" class="success-message" style="display:none;"></div>
+
+        <form class="form-stack" id="authForm" onsubmit="handleAuthSubmit(event)">
+          <div id="nameFieldGroup" style="display:none;">
+            <label>
+              Full name
+              <input type="text" id="authName" placeholder="e.g. Olawale Adeyemi" />
+            </label>
+          </div>
+          <label>
+            Email address
+            <input type="email" id="authEmail" placeholder="you@example.com" required />
+          </label>
+          <label>
+            Password
+            <input type="password" id="authPassword" placeholder="••••••••" required />
+          </label>
+          <button type="submit" class="btn btn-primary btn-full" id="authSubmitBtn" style="margin-top: 10px; height: 46px;">Sign in</button>
+        </form>
+
+        <div style="margin-top: 24px; text-align: center; font-size: 13px; color: var(--muted);">
+          <span id="authSwitchText">Don't have an account? </span>
+          <a href="javascript:void(0)" onclick="toggleAuthMode()" id="authSwitchLink" style="color:var(--blue); font-weight:700;">Create one</a>
+        </div>
+
+        <!-- DEMO TEST ACCOUNTS WITH 1-CLICK AUTO-FILL -->
+        <div style="margin-top: 24px; padding-top: 18px; border-top: 1px solid var(--line);">
+          <div style="font-size: 11px; font-weight: 800; letter-spacing: 0.8px; color: #64748b; text-transform: uppercase; margin-bottom: 10px;">
+            Quick Demo Accounts (Click to Auto-Fill)
+          </div>
+          <div style="display: grid; gap: 8px;">
+            <!-- Regular Attendee User -->
+            <div class="demo-auth-pill" onclick="fillDemoCredentials('user@example.com', 'User123!')">
+              <div style="text-align: left;">
+                <div style="font-weight: 700; color: var(--navy); display: flex; align-items: center; gap: 6px; font-size: 13px;">
+                  <span style="display:inline-block; width:8px; height:8px; border-radius:50%; background:#10b981;"></span>
+                  Attendee Test Login
+                </div>
+                <div style="font-size: 12px; color: var(--muted); margin-top: 2px;">
+                  <code>user@example.com</code> · Password: <code>User123!</code>
+                </div>
+              </div>
+              <button type="button" class="btn btn-outline btn-small" style="padding: 4px 10px; font-size: 11px; pointer-events:none;">Auto Fill</button>
+            </div>
+
+            <!-- Administrator User -->
+            <div class="demo-auth-pill" onclick="fillDemoCredentials('admin@example.com', 'Admin123!')">
+              <div style="text-align: left;">
+                <div style="font-weight: 700; color: var(--navy); display: flex; align-items: center; gap: 6px; font-size: 13px;">
+                  <span style="display:inline-block; width:8px; height:8px; border-radius:50%; background:#f59e0b;"></span>
+                  Admin Portal Login
+                </div>
+                <div style="font-size: 12px; color: var(--muted); margin-top: 2px;">
+                  <code>admin@example.com</code> · Password: <code>Admin123!</code>
+                </div>
+              </div>
+              <button type="button" class="btn btn-outline btn-small" style="padding: 4px 10px; font-size: 11px; pointer-events:none;">Auto Fill</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ======================================================== -->
+  <!-- PAGE 4: USER DASHBOARD (#/my-events) WITH FIXED SIDEBAR -->
+  <!-- ======================================================== -->
+  <section id="page-userDash" class="page-view">
+    <div class="dashboard-layout">
+      <!-- User Sidebar (Fixed 100vh) -->
+      <aside class="dashboard-sidebar">
+        <!-- Logo & Website Brand -->
+        <div class="sidebar-brand-header" onclick="navigate('#/')">
+          <div class="sidebar-brand-mark">✦</div>
+          <div>
+            <div class="sidebar-brand-title">EventHub</div>
+            <div class="sidebar-brand-badge">Attendee Portal</div>
+          </div>
+        </div>
+
+        <div class="sidebar-user-card">
+          <div class="sidebar-avatar" id="userAvatar">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+          </div>
+          <div style="overflow:hidden;">
+            <strong id="userSidebarName">Chidi Okafor</strong>
+            <span id="userSidebarEmail">user@example.com</span>
+            <div class="sidebar-role-badge">Attendee</div>
+          </div>
+        </div>
+
+        <div class="sidebar-nav-title">Attendee Portal</div>
+        <div class="sidebar-nav-list">
+          <a class="sidebar-nav-item active" onclick="switchUserTab('tickets', this)">
+            <svg viewBox="0 0 24 24"><path d="M2 9a3 3 0 0 1 0 6v2a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-2a3 3 0 0 1 0-6V7a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2Z"></path><path d="M13 5v2"></path><path d="M13 17v2"></path><path d="M13 11v2"></path></svg>
+            <span>My Tickets & Passes</span>
+          </a>
+          <a class="sidebar-nav-item" onclick="switchUserTab('saved', this)">
+            <svg viewBox="0 0 24 24"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"></path></svg>
+            <span>Saved Events</span>
+          </a>
+        </div>
+
+        <div class="sidebar-nav-title">Navigation</div>
+        <div class="sidebar-nav-list">
+          <a class="sidebar-nav-item" onclick="navigate('#/')">
+            <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"></circle><line x1="2" y1="12" x2="22" y2="12"></line><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path></svg>
+            <span>Explore Events</span>
+          </a>
+        </div>
+
+        <div style="margin-top: auto; padding-top: 20px;">
+          <button class="btn btn-outline btn-full" onclick="handleLogout()" style="background:#1e293b; color:#cbd5e1; border-color:#334155; display:flex; align-items:center; justify-content:center; gap:8px;">
+            <svg style="width:16px; height:16px; stroke:currentColor; stroke-width:2; fill:none;" viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
+            <span>Sign out</span>
+          </button>
+        </div>
+      </aside>
+
+      <!-- User Main Content (Independently Scrolling 100vh) -->
+      <main class="dashboard-main">
+        <!-- User Topbar with Welcome Back -->
+        <div class="dashboard-topbar">
+          <div class="dashboard-topbar-welcome">
+            <h2>Welcome back, <span id="topbarUserName">Attendee</span> 👋</h2>
+            <span>Attendee Dashboard · Manage tickets, QR admission passes, and bookmarks</span>
+          </div>
+          <div style="display:flex; align-items:center; gap:12px;">
+            <button class="btn btn-primary btn-small" onclick="navigate('#/')">
+              Explore More Events
+            </button>
+          </div>
+        </div>
+
+        <div class="dashboard-body">
+          <!-- Sub-view 1: My Tickets -->
+          <div id="user-tab-tickets" class="dash-sub-view active-dash-view">
+            <div class="dashboard-header">
+              <div>
+                <h1>My Admission Tickets</h1>
+                <p>Keep track of your confirmed bookings and view your digital QR passes.</p>
+              </div>
+              <button class="btn btn-outline btn-small" onclick="loadMyRegistrations()">↻ Refresh</button>
+            </div>
+            <div id="myEventsContainer">
+              <p class="state-message">Loading registrations...</p>
+            </div>
+          </div>
+
+          <!-- Sub-view 2: Saved Events -->
+          <div id="user-tab-saved" class="dash-sub-view">
+            <div class="dashboard-header">
+              <div>
+                <h1>Saved Events</h1>
+                <p>Events you bookmarked for later consideration.</p>
+              </div>
+            </div>
+            <div id="userSavedContainer"></div>
+          </div>
+        </div>
+      </main>
+    </div>
+  </section>
+
+  <!-- ======================================================== -->
+  <!-- PAGE 5: MODERN ADMIN PORTAL (#/admin) WITH FIXED SIDEBAR -->
+  <!-- ======================================================== -->
+  <section id="page-admin" class="page-view">
+    <div class="dashboard-layout">
+      <!-- Admin Sidebar (Fixed 100vh) -->
+      <aside class="dashboard-sidebar">
+        <!-- Logo & Website Brand -->
+        <div class="sidebar-brand-header" onclick="navigate('#/')">
+          <div class="sidebar-brand-mark">✦</div>
+          <div>
+            <div class="sidebar-brand-title">EventHub</div>
+            <div class="sidebar-brand-badge" style="background:#fef3c7; color:#92400e; border-color:#fde68a;">Admin Portal</div>
+          </div>
+        </div>
+
+        <div class="sidebar-user-card">
+          <div class="sidebar-avatar" style="background:#f59e0b;">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
+          </div>
+          <div style="overflow:hidden;">
+            <strong id="adminSidebarName">System Admin</strong>
+            <span id="adminSidebarEmail">admin@example.com</span>
+            <div class="sidebar-role-badge" style="background:#f59e0b;">Super Admin</div>
+          </div>
+        </div>
+
+        <div class="sidebar-nav-title">Administration</div>
+        <div class="sidebar-nav-list">
+          <a class="sidebar-nav-item active" onclick="switchAdminTab('overview', this)">
+            <svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"></rect><rect x="14" y="3" width="7" height="7" rx="1"></rect><rect x="14" y="14" width="7" height="7" rx="1"></rect><rect x="3" y="14" width="7" height="7" rx="1"></rect></svg>
+            <span>Dashboard Overview</span>
+          </a>
+          <a class="sidebar-nav-item" onclick="switchAdminTab('events', this)">
+            <svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+            <span>Manage Events</span>
+          </a>
+          <a class="sidebar-nav-item" onclick="switchAdminTab('create', this)">
+            <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="16"></line><line x1="8" y1="12" x2="16" y2="12"></line></svg>
+            <span>Publish Event</span>
+          </a>
+          <a class="sidebar-nav-item" onclick="switchAdminTab('users', this)">
+            <svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
+            <span>User Management</span>
+          </a>
+          <a class="sidebar-nav-item" onclick="switchAdminTab('registrations', this)">
+            <svg viewBox="0 0 24 24"><path d="M2 9a3 3 0 0 1 0 6v2a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-2a3 3 0 0 1 0-6V7a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2Z"></path><path d="M13 5v2"></path><path d="M13 17v2"></path><path d="M13 11v2"></path></svg>
+            <span>Attendee Bookings</span>
+          </a>
+        </div>
+
+        <div class="sidebar-nav-title">Navigation</div>
+        <div class="sidebar-nav-list">
+          <a class="sidebar-nav-item" onclick="navigate('#/')">
+            <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"></circle><line x1="2" y1="12" x2="22" y2="12"></line><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path></svg>
+            <span>View Public Site</span>
+          </a>
+        </div>
+
+        <div style="margin-top: auto; padding-top: 20px;">
+          <button class="btn btn-outline btn-full" onclick="handleLogout()" style="background:#1e293b; color:#cbd5e1; border-color:#334155; display:flex; align-items:center; justify-content:center; gap:8px;">
+            <svg style="width:16px; height:16px; stroke:currentColor; stroke-width:2; fill:none;" viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
+            <span>Sign out</span>
+          </button>
+        </div>
+      </aside>
+
+      <!-- Admin Main Content (Independently Scrolling 100vh) -->
+      <main class="dashboard-main">
+        <!-- Admin Topbar with Welcome Back -->
+        <div class="dashboard-topbar">
+          <div class="dashboard-topbar-welcome">
+            <h2>Welcome back, <span id="topbarAdminName">System Administrator</span> 👋</h2>
+            <span>Administrative Control Center · Live Platform Analytics & System Quotas</span>
+          </div>
+          <div style="display:flex; align-items:center; gap:10px;">
+            <button class="btn btn-outline btn-small" onclick="exportRegistrationsCSV()">
+              📥 Export CSV
+            </button>
+            <button class="btn btn-primary btn-small" onclick="switchAdminTab('create')">
+              + Publish Event
+            </button>
+          </div>
+        </div>
+
+        <div class="dashboard-body">
+          <!-- Sub-view 1: Overview -->
+          <div id="admin-tab-overview" class="dash-sub-view active-dash-view">
+            <div class="dashboard-header">
+              <div>
+                <h1>System Overview</h1>
+                <p>Real-time analytics and management summary for EventHub Nigeria.</p>
+              </div>
+              <button class="btn btn-primary btn-small" onclick="switchAdminTab('create')">
+                + Post New Event
+              </button>
+            </div>
+
+            <div class="stats-grid">
+              <div class="stat-card">
+                <small>TOTAL EVENTS</small>
+                <strong id="statEvents">—</strong>
+              </div>
+              <div class="stat-card">
+                <small>REGISTERED ATTENDEES</small>
+                <strong id="statRegistrations">—</strong>
+              </div>
+              <div class="stat-card">
+                <small>TOTAL SEATS CAPACITY</small>
+                <strong id="statCapacity">—</strong>
+              </div>
+              <div class="stat-card">
+                <small>REGISTERED USERS</small>
+                <strong id="statUsers">—</strong>
+              </div>
+            </div>
+
+            <h2 style="font:700 18px Manrope; margin: 25px 0 14px;">Recent System Registrations</h2>
+            <div class="table-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Attendee</th>
+                    <th>Email</th>
+                    <th>Event Title</th>
+                    <th>Booked Date</th>
+                    <th>Status</th>
+                  </tr>
+                </thead>
+                <tbody id="overviewRecentList">
+                  <tr><td colspan="5" class="state-message">Loading...</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- Sub-view 2: Manage Events -->
+          <div id="admin-tab-events" class="dash-sub-view">
+            <div class="dashboard-header">
+              <div>
+                <h1>Event Management</h1>
+                <p>Monitor event quotas, attendees, and remove expired listings.</p>
+              </div>
+              <button class="btn btn-primary btn-small" onclick="switchAdminTab('create')">
+                + Add Event
+              </button>
+            </div>
+
+            <div class="table-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Event Title</th>
+                    <th>Category</th>
+                    <th>Venue</th>
+                    <th>Capacity</th>
+                    <th>Bookings</th>
+                    <th>Action</th>
+                  </tr>
+                </thead>
+                <tbody id="adminEventsList">
+                  <tr><td colspan="6" class="state-message">Loading events...</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- Sub-view 3: Publish Event -->
+          <div id="admin-tab-create" class="dash-sub-view">
+            <div class="dashboard-header">
+              <div>
+                <h1>Publish a New Event</h1>
+                <p>Create and broadcast a conference, workshop, or cultural gathering.</p>
+              </div>
+            </div>
+
+            <div class="admin-form-section">
+              <div id="adminFormMessage"></div>
+              <form class="admin-form" onsubmit="handleCreateEvent(event)">
+                <div class="wide">
+                  <label>Event Title <input id="evTitle" required placeholder="e.g. Lagos Artificial Intelligence & Cloud Summit 2027" /></label>
+                </div>
+                <div class="wide">
+                  <label>Description <textarea id="evDescription" required rows="3" placeholder="Full agenda and details of the event..."></textarea></label>
+                </div>
+                <div>
+                  <label>Category
+                    <select id="evCategory">
+                      <option value="Technology">Technology</option>
+                      <option value="Business">Business</option>
+                      <option value="Arts">Arts & Culture</option>
+                      <option value="General">General</option>
+                    </select>
+                  </label>
+                </div>
+                <div>
+                  <label>Capacity <input type="number" id="evCapacity" required min="1" value="300" /></label>
+                </div>
+                <div>
+                  <label>Venue (City & State) <input id="evVenue" required placeholder="e.g. Landmark Centre, Victoria Island, Lagos" /></label>
+                </div>
+                <div>
+                  <label>Event Date & Time <input type="datetime-local" id="evDate" required /></label>
+                </div>
+                <div>
+                  <label>Registration Deadline <input type="datetime-local" id="evDeadline" /></label>
+                </div>
+                <div>
+                  <label>Cover Photo URL (Pexels / Unsplash) 
+                    <input type="url" id="evImage" placeholder="https://images.pexels.com/..." />
+                  </label>
+                  <div style="display:flex; gap:6px; margin-top:6px; flex-wrap:wrap;">
+                    <button type="button" class="btn btn-outline btn-small" style="font-size:11px; padding:3px 8px;" onclick="document.getElementById('evImage').value='https://images.pexels.com/photos/3184291/pexels-photo-3184291.jpeg?auto=compress&cs=tinysrgb&w=1200'">⚡ Tech Photo</button>
+                    <button type="button" class="btn btn-outline btn-small" style="font-size:11px; padding:3px 8px;" onclick="document.getElementById('evImage').value='https://images.pexels.com/photos/3184325/pexels-photo-3184325.jpeg?auto=compress&cs=tinysrgb&w=1200'">⚡ Business Photo</button>
+                    <button type="button" class="btn btn-outline btn-small" style="font-size:11px; padding:3px 8px;" onclick="document.getElementById('evImage').value='https://images.pexels.com/photos/7176026/pexels-photo-7176026.jpeg?auto=compress&cs=tinysrgb&w=1200'">⚡ Arts Photo</button>
+                  </div>
+                </div>
+                <div class="wide">
+                  <button type="submit" class="btn btn-primary" id="createEventBtn" style="height:44px;">
+                    Publish event to database
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+
+          <!-- Sub-view 4: User Management -->
+          <div id="admin-tab-users" class="dash-sub-view">
+            <div class="dashboard-header">
+              <div>
+                <h1>User Management</h1>
+                <p>All registered user accounts across the platform.</p>
+              </div>
+            </div>
+
+            <div class="table-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th>User ID</th>
+                    <th>Name</th>
+                    <th>Email</th>
+                    <th>Role</th>
+                    <th>Registered Events</th>
+                    <th>Joined Date</th>
+                    <th>Action</th>
+                  </tr>
+                </thead>
+                <tbody id="adminUsersList">
+                  <tr><td colspan="7" class="state-message">Loading users...</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- Sub-view 5: All Bookings & CSV Export -->
+          <div id="admin-tab-registrations" class="dash-sub-view">
+            <div class="dashboard-header">
+              <div>
+                <h1>Attendee Bookings & Export</h1>
+                <p>Full registration registry with instant CSV export for admission verification.</p>
+              </div>
+              <button class="btn btn-primary btn-small" onclick="exportRegistrationsCSV()">
+                📥 Export to CSV
+              </button>
+            </div>
+
+            <div class="table-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Attendee</th>
+                    <th>Email</th>
+                    <th>Event Title</th>
+                    <th>Event Date</th>
+                    <th>Booked Date</th>
+                    <th>Status</th>
+                  </tr>
+                </thead>
+                <tbody id="adminRegistrationsList">
+                  <tr><td colspan="6" class="state-message">Loading registrations...</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- End Admin Sub-views -->
+        </div>
+      </main>
+    </div>
+  </section>
+
+  <!-- TICKET PASS & QR CODE MODAL -->
+  <div id="ticketModal" class="ticket-modal-overlay" onclick="closeTicketModal()">
+    <div class="ticket-modal-content" onclick="event.stopPropagation()">
+      <button class="ticket-modal-close" onclick="closeTicketModal()">✕</button>
+
+      <div class="ticket-card printable-ticket">
+        <div class="ticket-header">
+          <div class="ticket-brand">
+            <span class="brand-mark">✦</span>
+            <div>
+              <strong>EventHub Admission Pass</strong>
+              <span>Official Digital Ticket</span>
+            </div>
+          </div>
+          <span class="ticket-badge">CONFIRMED</span>
+        </div>
+
+        <div class="ticket-body">
+          <h2 id="modalEventTitle" class="ticket-event-title">Event Title</h2>
+          <div id="modalCategoryTag" class="ticket-category-tag">Category</div>
+
+          <div class="ticket-details-grid">
+            <div>
+              <small>DATE & TIME</small>
+              <strong id="modalDate">—</strong>
+            </div>
+            <div>
+              <small>VENUE</small>
+              <strong id="modalVenue">—</strong>
+            </div>
+            <div>
+              <small>ATTENDEE</small>
+              <strong id="modalAttendeeName">—</strong>
+              <span id="modalAttendeeEmail">—</span>
+            </div>
+            <div>
+              <small>REFERENCE CODE</small>
+              <strong class="ticket-code" id="modalRef">—</strong>
+            </div>
+          </div>
+
+          <div class="ticket-qr-section">
+            <div class="ticket-qr-frame">
+              <img id="modalQrImg" src="" class="ticket-qr-img" alt="QR Admission Code" />
+            </div>
+            <p>Scan this QR code at the event gate in Lagos/Abuja for fast admission verification.</p>
+          </div>
+        </div>
+
+        <div class="ticket-actions no-print">
+          <button class="btn btn-primary btn-full" onclick="window.print()">🖨️ Print / Save Ticket Pass</button>
+          <button class="btn btn-outline btn-full" onclick="closeTicketModal()">Close</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- PUBLIC FOOTER (Hidden on auth pages) -->
+  <footer class="footer" id="publicFooter">
+    <strong>EventHub Nigeria</strong>
+    <span>Online Event Management and Registration System</span>
+    <div>
+      <span style="margin-right:15px;">© 2027 EventHub</span>
+      <a href="#/admin" style="color:var(--muted); font-size:11px;">Admin Access</a>
+    </div>
+  </footer>
+
+  <script>
+    // State
+    let currentUser = null;
+    let currentCategory = 'All';
+    let currentSearch = '';
+    let allEvents = [];
+    let authMode = 'login';
+    let currentEventDetail = null;
+    let savedEventIds = JSON.parse(localStorage.getItem('eventhub_favorites') || '[]');
+    let adminRegistrationsCache = [];
+
+    function showToast(text) {
+      const toast = document.getElementById('toast');
+      toast.textContent = text;
+      toast.style.display = 'flex';
+      setTimeout(() => { toast.style.display = 'none'; }, 2600);
+    }
+
+    // API Helper
+    async function api(path, options = {}) {
+      const token = localStorage.getItem('eventhub_token');
+      const headers = { 'Content-Type': 'application/json', ...(options.headers || {}) };
+      if (token) headers.Authorization = `Bearer ${token}`;
+      const res = await fetch('/api' + path, { ...options, headers });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(data.message || 'Request failed');
+      return data;
+    }
+
+    // Favorites / Bookmark Toggle
+    function toggleFavorite(eventId, e) {
+      if (e) e.stopPropagation();
+      const idx = savedEventIds.indexOf(eventId);
+      if (idx > -1) {
+        savedEventIds.splice(idx, 1);
+        showToast('Event removed from saved');
+      } else {
+        savedEventIds.push(eventId);
+        showToast('❤️ Saved to your favorites!');
+      }
+      localStorage.setItem('eventhub_favorites', JSON.stringify(savedEventIds));
+      updateSavedCount();
+      loadEvents();
+    }
+
+    function updateSavedCount() {
+      const el = document.getElementById('savedCount');
+      if (el) el.textContent = savedEventIds.length;
+    }
+
+    // Navigation Router (Multi-Page Hash Router)
+    function navigate(hash) {
+      window.location.hash = hash;
+    }
+
+    let myRegistrationsCache = [];
+
+    function handleRouting() {
+      const rawHash = window.location.hash || '#/';
+      const hash = rawHash.split('?')[0];
+      document.querySelectorAll('.page-view').forEach(p => p.classList.remove('active-page'));
+      document.querySelectorAll('#navLinks a').forEach(a => a.classList.remove('active'));
+
+      const publicNavbar = document.getElementById('publicNavbar');
+      const publicFooter = document.getElementById('publicFooter');
+      const breadcrumbsBar = document.getElementById('breadcrumbsBar');
+      const breadcrumbCurrent = document.getElementById('breadcrumbCurrent');
+
+      // Rule: Hide public website navbar & footer on Auth pages and on all Dashboards
+      const isDashboard = hash.startsWith('#/admin') || hash.startsWith('#/my-events') || hash === '#/my-tickets' || hash === '#/saved';
+      const isAuth = hash === '#/login' || hash === '#/register';
+
+      if (isAuth || isDashboard) {
+        publicNavbar.style.display = 'none';
+        publicFooter.style.display = 'none';
+        breadcrumbsBar.style.display = 'none';
+      } else {
+        publicNavbar.style.display = 'flex';
+        publicFooter.style.display = 'flex';
+      }
+
+      if (isAuth) {
+        document.getElementById('page-auth').classList.add('active-page');
+        authMode = hash === '#/login' ? 'login' : 'register';
+        updateAuthUI();
+        window.scrollTo({ top: 0 });
+        return;
+      }
+
+      if (hash.startsWith('#/events/')) {
+        const id = hash.replace('#/events/', '');
+        document.getElementById('page-details').classList.add('active-page');
+        breadcrumbsBar.style.display = 'flex';
+        breadcrumbCurrent.textContent = 'Event Details';
+        loadEventDetails(id);
+      } else if (hash.startsWith('#/my-events') || hash === '#/my-tickets' || hash === '#/saved') {
+        document.getElementById('page-userDash').classList.add('active-page');
+        document.getElementById('nav-my-events').classList.add('active');
+        breadcrumbsBar.style.display = 'none';
+        if (!currentUser) {
+          navigate('#/login');
+        } else {
+          updateUserSidebar();
+          const subTab = (hash === '#/saved' || hash.includes('saved')) ? 'saved' : 'tickets';
+          switchUserTab(subTab);
+          if (subTab === 'tickets') loadMyRegistrations();
+        }
+      } else if (hash.startsWith('#/admin')) {
+        breadcrumbsBar.style.display = 'none';
+        if (!currentUser) {
+          navigate('#/login');
+        } else if (currentUser.role !== 'admin') {
+          showToast('Administrator privileges required.');
+          navigate('#/');
+        } else {
+          document.getElementById('page-admin').classList.add('active-page');
+          updateAdminSidebar();
+          loadAdminDashboard();
+          let subTab = hash.replace('#/admin/', '').replace('#/admin', '') || 'overview';
+          if (!['overview', 'events', 'create', 'users', 'registrations'].includes(subTab)) {
+            subTab = 'overview';
+          }
+          switchAdminTab(subTab);
+        }
+      } else {
+        // Home Page
+        document.getElementById('page-home').classList.add('active-page');
+        document.getElementById('nav-home').classList.add('active');
+        breadcrumbsBar.style.display = 'none';
+        loadEvents();
+      }
+
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    // Initialize App
+    async function init() {
+      const token = localStorage.getItem('eventhub_token');
+      if (token) {
+        try {
+          const res = await api('/auth/me');
+          currentUser = res.user;
+        } catch {
+          localStorage.removeItem('eventhub_token');
+          currentUser = null;
+        }
+      }
+      updateSavedCount();
+      renderNav();
+      handleRouting();
+    }
+
+    function renderNav() {
+      const navActions = document.getElementById('navActions');
+      if (currentUser) {
+        let adminPill = '';
+        if (currentUser.role === 'admin') {
+          adminPill = `
+            <a href="#/admin" class="admin-pill-link">
+              <svg style="width:14px; height:14px; stroke:currentColor; stroke-width:2.5; fill:none;" viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
+              <span>Admin Panel</span>
+            </a>
+          `;
+        }
+        navActions.innerHTML = `
+          ${adminPill}
+          <a href="#/my-events" class="welcome">Hi, <strong>${escapeHtml(currentUser.name)}</strong></a>
+          <button class="btn btn-outline btn-small" onclick="handleLogout()">Sign out</button>
+        `;
+      } else {
+        navActions.innerHTML = `
+          <a href="#/login" class="nav-login">Sign in</a>
+          <button class="btn btn-primary btn-small" onclick="navigate('#/register')">Create account</button>
+        `;
+      }
+    }
+
+    // Demo Credentials Helper
+    function fillDemoCredentials(email, pass) {
+      if (authMode !== 'login') {
+        authMode = 'login';
+        updateAuthUI();
+      }
+      document.getElementById('authEmail').value = email;
+      document.getElementById('authPassword').value = pass;
+      showToast('Credentials filled for ' + email);
+    }
+
+    // Dashboard Tabs
+    function switchAdminTab(tabName, btn) {
+      document.querySelectorAll('#page-admin .dash-sub-view').forEach(v => v.classList.remove('active-dash-view'));
+      document.querySelectorAll('#page-admin .sidebar-nav-item').forEach(b => b.classList.remove('active'));
+      const el = document.getElementById('admin-tab-' + tabName);
+      if (el) el.classList.add('active-dash-view');
+      const targetBtn = btn || document.querySelector(`#page-admin [onclick*="'${tabName}'"]`);
+      if (targetBtn) targetBtn.classList.add('active');
+      if (window.location.hash !== '#/admin/' + tabName && window.location.hash !== '#/admin') {
+        history.replaceState(null, null, '#/admin/' + tabName);
+      }
+    }
+
+    function switchUserTab(tabName, btn) {
+      document.querySelectorAll('#page-userDash .dash-sub-view').forEach(v => v.classList.remove('active-dash-view'));
+      document.querySelectorAll('#page-userDash .sidebar-nav-item').forEach(b => b.classList.remove('active'));
+      const el = document.getElementById('user-tab-' + tabName);
+      if (el) el.classList.add('active-dash-view');
+      const targetBtn = btn || document.querySelector(`#page-userDash [onclick*="'${tabName}'"]`);
+      if (targetBtn) targetBtn.classList.add('active');
+      if (tabName === 'saved') loadUserSavedEvents();
+    }
+
+    function updateUserSidebar() {
+      if (!currentUser) return;
+      document.getElementById('userSidebarName').textContent = currentUser.name;
+      document.getElementById('userSidebarEmail').textContent = currentUser.email;
+      const topbarEl = document.getElementById('topbarUserName');
+      if (topbarEl) topbarEl.textContent = currentUser.name;
+      const initial = currentUser.name ? currentUser.name.charAt(0).toUpperCase() : 'U';
+      document.getElementById('userAvatar').innerHTML = `<span style="font-weight:800; font-size:16px;">${initial}</span>`;
+    }
+
+    function updateAdminSidebar() {
+      if (!currentUser) return;
+      document.getElementById('adminSidebarName').textContent = currentUser.name;
+      document.getElementById('adminSidebarEmail').textContent = currentUser.email;
+      const topbarEl = document.getElementById('topbarAdminName');
+      if (topbarEl) topbarEl.textContent = currentUser.name;
+    }
+
+    // Events Search & Filter
+    let searchDebounce = null;
+    function handleSearchInput() {
+      clearTimeout(searchDebounce);
+      searchDebounce = setTimeout(() => {
+        currentSearch = document.getElementById('searchInput').value;
+        loadEvents();
+      }, 250);
+    }
+
+    function setCategoryFilter(cat, btn) {
+      currentCategory = cat;
+      document.querySelectorAll('.category-filter-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      loadEvents();
+    }
+
+    async function loadEvents() {
+      const container = document.getElementById('eventsContainer');
+      try {
+        let eventsToDisplay = [];
+        if (currentCategory === 'Saved') {
+          const res = await api(`/events?search=${encodeURIComponent(currentSearch)}`);
+          eventsToDisplay = (res.events || []).filter(e => savedEventIds.includes(e.id));
+        } else {
+          const catParam = currentCategory !== 'All' ? `&category=${encodeURIComponent(currentCategory)}` : '';
+          const res = await api(`/events?search=${encodeURIComponent(currentSearch)}${catParam}`);
+          eventsToDisplay = res.events || [];
+        }
+
+        allEvents = eventsToDisplay;
+
+        if (allEvents.length === 0) {
+          container.innerHTML = `
+            <div class="empty-state">
+              <h3>No events found</h3>
+              <p>${currentCategory === 'Saved' ? 'You have not saved any events to your favorites yet. Click the heart icon on any event to bookmark it.' : 'Try a different search term or select "All Events".'}</p>
+            </div>
+          `;
+          return;
+        }
+
+        container.innerHTML = `
+          <div class="event-grid">
+            ${allEvents.map(event => {
+              const date = new Date(event.event_date);
+              const remaining = Math.max(0, event.capacity - (event.registered_count || 0));
+              const isSaved = savedEventIds.includes(event.id);
+              return `
+                <article class="event-card">
+                  <div class="event-image-wrap" onclick="navigate('#/events/${event.id}')">
+                    <img src="${escapeHtml(event.image_url)}" class="event-image" alt="" />
+                    <span class="category-pill">${escapeHtml(event.category || 'General')}</span>
+                    <button type="button" class="favorite-btn ${isSaved ? 'saved' : ''}" onclick="toggleFavorite(${event.id}, event)" title="${isSaved ? 'Remove from saved' : 'Save event'}">
+                      ${isSaved ? '❤️' : '🤍'}
+                    </button>
+                  </div>
+                  <div class="event-card-body">
+                    <div class="event-badge-row">
+                      <span class="event-date-small">${date.toLocaleDateString(undefined, {month:'short', day:'numeric', year:'numeric'})} · ${date.toLocaleTimeString(undefined, {hour:'numeric', minute:'2-digit'})}</span>
+                      <span class="event-price-badge">Free Admission</span>
+                    </div>
+                    <h3><a onclick="navigate('#/events/${event.id}')">${escapeHtml(event.title)}</a></h3>
+                    <p>${escapeHtml(event.description)}</p>
+                    <div class="event-card-footer">
+                      <span>📍 ${escapeHtml(event.venue)}</span>
+                      <span><strong>${remaining}</strong> spots left</span>
+                    </div>
+                    <a class="text-link" onclick="navigate('#/events/${event.id}')" style="margin-top:10px;">View event Details →</a>
+                  </div>
+                </article>
+              `;
+            }).join('')}
+          </div>
+        `;
+      } catch (err) {
+        container.innerHTML = `<div class="error-text">${escapeHtml(err.message)}</div>`;
+      }
+    }
+
+    // Load Event Details
+    async function loadEventDetails(eventId) {
+      const container = document.getElementById('eventDetailsContent');
+      container.innerHTML = '<p class="state-message">Loading event details...</p>';
+
+      try {
+        const res = await api(`/events/${eventId}`);
+        const event = res.event;
+        currentEventDetail = event;
+
+        let isRegistered = false;
+        let regId = null;
+
+        if (currentUser) {
+          try {
+            const myRegs = await api('/registrations/mine/list');
+            const match = myRegs.registrations.find(r => r.id === event.id && r.status === 'confirmed');
+            if (match) {
+              isRegistered = true;
+              regId = match.registration_id;
+            }
+          } catch {}
+        }
+
+        const date = new Date(event.event_date);
+        const endDate = new Date(date.getTime() + 3 * 60 * 60 * 1000);
+        const remaining = Math.max(0, event.capacity - (event.registered_count || 0));
+        const pct = Math.min(100, (event.registered_count / event.capacity) * 100);
+
+        const startISO = date.toISOString().replace(/-|:|\.\d\d\d/g, '');
+        const endISO = endDate.toISOString().replace(/-|:|\.\d\d\d/g, '');
+        const calUrl = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(event.title)}&dates=${startISO}/${endISO}&details=${encodeURIComponent(event.description)}&location=${encodeURIComponent(event.venue)}`;
+
+        const shareUrl = window.location.origin + `/#/events/${event.id}`;
+        const waMsg = `Join me at "${event.title}" on ${date.toLocaleDateString()} at ${event.venue}! Register your spot here: ${shareUrl}`;
+        const waUrl = `https://api.whatsapp.com/send?text=${encodeURIComponent(waMsg)}`;
+
+        container.innerHTML = `
+          <a onclick="navigate('#/')" class="back-link">← Back to events catalogue</a>
+          <img class="detail-image" src="${escapeHtml(event.image_url)}" alt="" />
+          <div class="detail-layout">
+            <article class="detail-main">
+              <span class="category-pill static-pill">${escapeHtml(event.category || 'General')}</span>
+              <h1>${escapeHtml(event.title)}</h1>
+              <p class="detail-description">${escapeHtml(event.description)}</p>
+              <h2>Location & Schedule</h2>
+              <div style="display:grid; gap:16px; margin-top:15px; font-size:14px;">
+                <div><small style="color:#8791a3; font-weight:700; display:block;">DATE & TIME</small><strong>${date.toLocaleString()}</strong></div>
+                <div><small style="color:#8791a3; font-weight:700; display:block;">VENUE</small><strong>${escapeHtml(event.venue)}</strong></div>
+                <div><small style="color:#8791a3; font-weight:700; display:block;">REGISTRATION DEADLINE</small><strong>${event.registration_deadline ? new Date(event.registration_deadline).toLocaleString() : 'Open until capacity reached'}</strong></div>
+              </div>
+
+              <div style="margin-top:25px; padding-top:20px; border-top:1px solid var(--line);">
+                <small style="color:#8791a3; font-weight:700; display:block; margin-bottom:10px;">SHARE & SAVE</small>
+                <div class="share-buttons-row">
+                  <a href="${calUrl}" target="_blank" rel="noopener" class="btn btn-outline btn-small">📅 Add to Google Calendar</a>
+                  <a href="${waUrl}" target="_blank" rel="noopener" class="btn btn-whatsapp btn-small">💬 Share on WhatsApp</a>
+                  <button type="button" class="btn btn-outline btn-small" onclick="copyEventLink('${event.id}')">🔗 Copy Link</button>
+                </div>
+              </div>
+            </article>
+
+            <aside class="register-panel">
+              <span class="eyebrow dark">RESERVE YOUR PLACE</span>
+              <h2>Registration</h2>
+              <div class="spots">
+                <strong>${remaining}</strong>
+                <span>spots remaining<br/>of ${event.capacity} total</span>
+              </div>
+              <div class="capacity-track"><span style="width: ${pct}%;"></span></div>
+
+              <div id="registerAlert"></div>
+
+              ${isRegistered ? `
+                <div style="display:grid; gap:10px;">
+                  <button class="btn btn-primary btn-full" onclick="openTicketModalById(${event.id}, ${regId})">
+                    🎟️ View Admission Pass & QR
+                  </button>
+                  <div class="success-message" style="text-align:center; margin:0;">You are confirmed for this event!</div>
+                </div>
+              ` : `
+                <button class="btn btn-primary btn-full" onclick="handleRegisterForEvent(${event.id})" ${remaining === 0 ? 'disabled' : ''}>
+                  ${remaining === 0 ? 'Event is full' : 'Register now (Free)'}
+                </button>
+              `}
+              <p style="font-size:11px; color:var(--muted); line-height:1.5; margin-top:14px;">Instant digital badge with scannable QR verification created upon booking.</p>
+            </aside>
+          </div>
+        `;
+      } catch (err) {
+        container.innerHTML = `<div class="error-text">${escapeHtml(err.message)}</div><a onclick="navigate('#/')" class="back-link">← Back to events</a>`;
+      }
+    }
+
+    function copyEventLink(eventId) {
+      const url = window.location.origin + `/#/events/${eventId}`;
+      navigator.clipboard.writeText(url).then(() => {
+        showToast('🔗 Link copied to clipboard!');
+      });
+    }
+
+    // Register For Event
+    async function handleRegisterForEvent(eventId) {
+      if (!currentUser) {
+        navigate('#/login');
+        return;
+      }
+      const alertBox = document.getElementById('registerAlert');
+      alertBox.innerHTML = '<p class="state-message">Reserving your admission spot...</p>';
+
+      try {
+        const res = await api(`/registrations/${eventId}`, { method: 'POST' });
+        alertBox.innerHTML = `<div class="success-message">${escapeHtml(res.message)}</div>`;
+        loadEventDetails(eventId);
+        if (currentEventDetail) {
+          openTicketModal(currentEventDetail, res.registration?.id);
+        }
+      } catch (err) {
+        alertBox.innerHTML = `<div class="form-error">${escapeHtml(err.message)}</div>`;
+      }
+    }
+
+    // User Dashboard: My Registrations
+    async function loadMyRegistrations() {
+      const container = document.getElementById('myEventsContainer');
+      container.innerHTML = '<p class="state-message">Loading registrations...</p>';
+
+      try {
+        const res = await api('/registrations/mine/list');
+        const list = res.registrations || [];
+
+        myRegistrationsCache = list;
+
+        if (list.length === 0) {
+          container.innerHTML = `
+            <div class="empty-state">
+              <h3>No event tickets yet</h3>
+              <p>Explore upcoming Nigerian events and book your admission pass.</p>
+              <button class="btn btn-primary" onclick="navigate('#/')">Browse Events</button>
+            </div>
+          `;
+          return;
+        }
+
+        container.innerHTML = `
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Event Title</th>
+                  <th>Date & Time</th>
+                  <th>Status</th>
+                  <th>Pass</th>
+                  <th>Action</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${list.map(item => `
+                  <tr>
+                    <td>
+                      <strong>${escapeHtml(item.title)}</strong>
+                      <small>📍 ${escapeHtml(item.venue)}</small>
+                    </td>
+                    <td>${new Date(item.event_date).toLocaleString()}</td>
+                    <td><span class="status ${item.status}">${item.status}</span></td>
+                    <td>
+                      ${item.status === 'confirmed' ? `
+                        <button class="btn btn-primary btn-small" onclick="openTicketModalById(${item.id}, ${item.registration_id})">
+                          🎟️ View QR Pass
+                        </button>
+                      ` : '—'}
+                    </td>
+                    <td>
+                      ${item.status === 'confirmed' ? `
+                        <button class="btn btn-danger btn-small" onclick="handleCancelRegistration(${item.id})">Cancel</button>
+                      ` : `
+                        <a class="text-link" onclick="navigate('#/events/${item.id}')">View</a>
+                      `}
+                    </td>
+                  </tr>
+                `).join('')}
+              </tbody>
+            </table>
+          </div>
+        `;
+      } catch (err) {
+        container.innerHTML = `<div class="error-text">${escapeHtml(err.message)}</div>`;
+      }
+    }
+
+    async function loadUserSavedEvents() {
+      const container = document.getElementById('userSavedContainer');
+      container.innerHTML = '<p class="state-message">Loading saved events...</p>';
+      try {
+        const res = await api('/events');
+        const saved = (res.events || []).filter(e => savedEventIds.includes(e.id));
+        if (saved.length === 0) {
+          container.innerHTML = `<div class="empty-state"><h3>No saved events</h3><p>You haven't bookmarked any events yet. Click the heart icon on any event to save it here.</p></div>`;
+          return;
+        }
+        container.innerHTML = `
+          <div class="event-grid">
+            ${saved.map(event => `
+              <article class="event-card">
+                <div class="event-image-wrap" onclick="navigate('#/events/${event.id}')">
+                  <img src="${escapeHtml(event.image_url)}" class="event-image" alt="" />
+                  <span class="category-pill">${escapeHtml(event.category || 'General')}</span>
+                </div>
+                <div class="event-card-body">
+                  <h3><a onclick="navigate('#/events/${event.id}')">${escapeHtml(event.title)}</a></h3>
+                  <p>${escapeHtml(event.description)}</p>
+                  <a class="text-link" onclick="navigate('#/events/${event.id}')" style="margin-top:10px;">View Details →</a>
+                </div>
+              </article>
+            `).join('')}
+          </div>
+        `;
+      } catch (err) {
+        container.innerHTML = `<div class="error-text">${escapeHtml(err.message)}</div>`;
+      }
+    }
+
+    async function handleCancelRegistration(eventId) {
+      if (!confirm('Are you sure you want to cancel this event registration?')) return;
+      try {
+        await api(`/registrations/${eventId}`, { method: 'DELETE' });
+        showToast('Registration cancelled');
+        loadMyRegistrations();
+      } catch (err) {
+        alert(err.message);
+      }
+    }
+
+    // Admin Dashboard Data
+    async function loadAdminDashboard() {
+      try {
+        const evRes = await api('/events');
+        const events = evRes.events || [];
+
+        const totalCapacity = events.reduce((sum, e) => sum + Number(e.capacity || 0), 0);
+        document.getElementById('statEvents').textContent = events.length;
+        document.getElementById('statCapacity').textContent = totalCapacity;
+
+        // Render Events Table
+        const adminEventsList = document.getElementById('adminEventsList');
+        adminEventsList.innerHTML = events.map(e => `
+          <tr>
+            <td><strong>${escapeHtml(e.title)}</strong></td>
+            <td><span class="category-pill" style="position:static;">${escapeHtml(e.category)}</span></td>
+            <td>${escapeHtml(e.venue)}</td>
+            <td>${e.capacity}</td>
+            <td>${e.registered_count || 0}</td>
+            <td>
+              <button class="btn btn-danger btn-small" onclick="handleDeleteEvent(${e.id})">Delete</button>
+            </td>
+          </tr>
+        `).join('');
+
+        // Registrations
+        const regRes = await api('/registrations/admin/all');
+        const registrations = regRes.registrations || [];
+        adminRegistrationsCache = registrations;
+
+        const confirmedCount = registrations.filter(r => r.status === 'confirmed').length;
+        document.getElementById('statRegistrations').textContent = confirmedCount;
+
+        const listContainer = document.getElementById('adminRegistrationsList');
+        const overviewRecentList = document.getElementById('overviewRecentList');
+
+        if (registrations.length === 0) {
+          listContainer.innerHTML = '<tr><td colspan="6" class="state-message">No bookings yet.</td></tr>';
+          overviewRecentList.innerHTML = '<tr><td colspan="5" class="state-message">No recent bookings.</td></tr>';
+        } else {
+          const rowsHtml = registrations.map(r => `
+            <tr>
+              <td><strong>${escapeHtml(r.attendee_name || 'Guest')}</strong></td>
+              <td>${escapeHtml(r.email || '')}</td>
+              <td>${escapeHtml(r.event_title || '')}</td>
+              <td>${new Date(r.event_date).toLocaleDateString()}</td>
+              <td>${new Date(r.registered_at).toLocaleDateString()}</td>
+              <td><span class="status ${r.status}">${r.status}</span></td>
+            </tr>
+          `).join('');
+
+          listContainer.innerHTML = rowsHtml;
+          overviewRecentList.innerHTML = registrations.slice(0, 5).map(r => `
+            <tr>
+              <td><strong>${escapeHtml(r.attendee_name || 'Guest')}</strong></td>
+              <td>${escapeHtml(r.email || '')}</td>
+              <td>${escapeHtml(r.event_title || '')}</td>
+              <td>${new Date(r.registered_at).toLocaleDateString()}</td>
+              <td><span class="status ${r.status}">${r.status}</span></td>
+            </tr>
+          `).join('');
+        }
+
+        // Users Management
+        loadAdminUsers();
+      } catch (err) {
+        console.error(err);
+      }
+    }
+
+    async function loadAdminUsers() {
+      try {
+        const res = await api('/auth/users');
+        const users = res.users || [];
+        document.getElementById('statUsers').textContent = users.length;
+
+        const usersList = document.getElementById('adminUsersList');
+        if (users.length === 0) {
+          usersList.innerHTML = '<tr><td colspan="7" class="state-message">No registered users.</td></tr>';
+        } else {
+          usersList.innerHTML = users.map(u => `
+            <tr>
+              <td><code>#${u.id}</code></td>
+              <td><strong>${escapeHtml(u.name)}</strong></td>
+              <td>${escapeHtml(u.email)}</td>
+              <td><span class="role-tag ${u.role}">${u.role}</span></td>
+              <td>${u.registrations_count || 0} event(s)</td>
+              <td>${new Date(u.created_at).toLocaleDateString()}</td>
+              <td>
+                ${u.id !== currentUser.id ? `
+                  <button class="btn btn-danger btn-small" onclick="handleDeleteUser(${u.id})">Delete User</button>
+                ` : '<span style="color:#64748b; font-size:11px;">(Current Admin)</span>'}
+              </td>
+            </tr>
+          `).join('');
+        }
+      } catch (err) {
+        console.error('Failed to load users:', err);
+      }
+    }
+
+    async function handleDeleteUser(userId) {
+      if (!confirm('Are you sure you want to delete this user account from the system?')) return;
+      try {
+        await api(`/auth/users/${userId}`, { method: 'DELETE' });
+        showToast('User account removed');
+        loadAdminUsers();
+      } catch (err) {
+        alert(err.message);
+      }
+    }
+
+    async function handleDeleteEvent(eventId) {
+      if (!confirm('Are you sure you want to delete this event from the catalogue?')) return;
+      try {
+        await api(`/events/${eventId}`, { method: 'DELETE' });
+        showToast('Event deleted successfully');
+        loadAdminDashboard();
+      } catch (err) {
+        alert(err.message);
+      }
+    }
+
+    async function handleCreateEvent(e) {
+      e.preventDefault();
+      const msgBox = document.getElementById('adminFormMessage');
+      const submitBtn = document.getElementById('createEventBtn');
+      msgBox.innerHTML = '';
+      submitBtn.disabled = true;
+      submitBtn.textContent = 'Publishing...';
+
+      const payload = {
+        title: document.getElementById('evTitle').value,
+        description: document.getElementById('evDescription').value,
+        category: document.getElementById('evCategory').value,
+        capacity: Number(document.getElementById('evCapacity').value),
+        venue: document.getElementById('evVenue').value,
+        event_date: document.getElementById('evDate').value,
+        registration_deadline: document.getElementById('evDeadline').value || null,
+        image_url: document.getElementById('evImage').value || 'https://images.pexels.com/photos/3184291/pexels-photo-3184291.jpeg?auto=compress&cs=tinysrgb&w=1200'
+      };
+
+      try {
+        await api('/events', { method: 'POST', body: JSON.stringify(payload) });
+        msgBox.innerHTML = '<div class="success-message">Event published live successfully! Redirecting to Manage Events...</div>';
+        showToast('✅ New event published live!');
+        e.target.reset();
+        await loadAdminDashboard();
+        setTimeout(() => switchAdminTab('events'), 900);
+      } catch (err) {
+        msgBox.innerHTML = `<div class="error-text">${escapeHtml(err.message)}</div>`;
+      } finally {
+        submitBtn.disabled = false;
+        submitBtn.textContent = 'Publish event to database';
+      }
+    }
+
+    // CSV Export for Admin
+    function exportRegistrationsCSV() {
+      if (!adminRegistrationsCache.length) {
+        showToast('No registrations to export.');
+        return;
+      }
+      let csv = 'Attendee Name,Email,Event Title,Event Date,Booked Date,Status\n';
+      adminRegistrationsCache.forEach(r => {
+        csv += `"${(r.attendee_name || '').replace(/"/g, '""')}","${(r.email || '').replace(/"/g, '""')}","${(r.event_title || '').replace(/"/g, '""')}","${r.event_date}","${r.registered_at}","${r.status}"\n`;
+      });
+      const blob = new Blob([csv], { type: 'text/csv' });
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `eventhub-attendees-${new Date().toISOString().slice(0, 10)}.csv`;
+      a.click();
+      window.URL.revokeObjectURL(url);
+      showToast('📥 CSV file downloaded!');
+    }
+
+    // Auth
+    function toggleAuthMode() {
+      authMode = authMode === 'login' ? 'register' : 'login';
+      navigate(authMode === 'login' ? '#/login' : '#/register');
+    }
+
+    function updateAuthUI() {
+      const isLogin = authMode === 'login';
+      document.getElementById('authTitle').textContent = isLogin ? 'Welcome back' : 'Create an account';
+      document.getElementById('authSubtitle').textContent = isLogin
+        ? 'Sign in with your account to register and manage your admission passes.'
+        : 'Sign up in seconds to reserve seats for upcoming Nigerian events.';
+      document.getElementById('nameFieldGroup').style.display = isLogin ? 'none' : 'block';
+      document.getElementById('authName').required = !isLogin;
+      document.getElementById('authSubmitBtn').textContent = isLogin ? 'Sign in' : 'Create account';
+      document.getElementById('authSwitchText').textContent = isLogin ? "Don't have an account? " : 'Already have an account? ';
+      document.getElementById('authSwitchLink').textContent = isLogin ? 'Create one' : 'Sign in';
+      document.getElementById('authError').style.display = 'none';
+      document.getElementById('authSuccess').style.display = 'none';
+    }
+
+    async function handleAuthSubmit(e) {
+      e.preventDefault();
+      const errorBox = document.getElementById('authError');
+      const submitBtn = document.getElementById('authSubmitBtn');
+      errorBox.style.display = 'none';
+      submitBtn.disabled = true;
+
+      const email = document.getElementById('authEmail').value;
+      const password = document.getElementById('authPassword').value;
+      const name = document.getElementById('authName').value;
+
+      try {
+        const endpoint = authMode === 'login' ? '/auth/login' : '/auth/register';
+        const body = authMode === 'login' ? { email, password } : { name, email, password };
+        const res = await api(endpoint, { method: 'POST', body: JSON.stringify(body) });
+
+        localStorage.setItem('eventhub_token', res.token);
+        currentUser = res.user;
+        renderNav();
+        showToast(`Welcome, ${currentUser.name}!`);
+
+        if (currentUser.role === 'admin') {
+          navigate('#/admin');
+        } else {
+          navigate('#/my-events');
+        }
+      } catch (err) {
+        errorBox.textContent = err.message;
+        errorBox.style.display = 'block';
+      } finally {
+        submitBtn.disabled = false;
+      }
+    }
+
+    function handleLogout() {
+      localStorage.removeItem('eventhub_token');
+      currentUser = null;
+      renderNav();
+      showToast('Signed out successfully');
+      navigate('#/');
+    }
+
+    // Ticket Modal & QR Code
+    function openTicketModalById(eventId, regId) {
+      let event = (myRegistrationsCache || []).find(r => r.id === Number(eventId));
+      if (!event && currentEventDetail && currentEventDetail.id === Number(eventId)) {
+        event = currentEventDetail;
+      }
+      if (!event) {
+        event = (allEvents || []).find(e => e.id === Number(eventId));
+      }
+      if (event) {
+        openTicketModal(event, regId);
+      } else {
+        api('/events/' + eventId).then(res => {
+          if (res.event) openTicketModal(res.event, regId);
+        }).catch(err => alert(err.message));
+      }
+    }
+
+    function openTicketModal(event, regId) {
+      if (!event) return;
+      document.getElementById('modalEventTitle').textContent = event.title;
+      document.getElementById('modalCategoryTag').textContent = event.category || 'General';
+      document.getElementById('modalDate').textContent = new Date(event.event_date).toLocaleString();
+      document.getElementById('modalVenue').textContent = event.venue;
+
+      const userName = currentUser ? currentUser.name : 'Valued Attendee';
+      const userEmail = currentUser ? currentUser.email : '';
+      document.getElementById('modalAttendeeName').textContent = userName;
+      document.getElementById('modalAttendeeEmail').textContent = userEmail;
+
+      const refCode = `EH-${String(event.id).padStart(3, '0')}-${String(regId || 'PASS')}`;
+      document.getElementById('modalRef').textContent = refCode;
+
+      const qrPayload = encodeURIComponent(`EVENTHUB_NIGERIA:${refCode}|${event.title}|${userName}|${event.venue}`);
+      document.getElementById('modalQrImg').src = `https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=${qrPayload}`;
+
+      document.getElementById('ticketModal').classList.add('open');
+    }
+
+    function closeTicketModal() {
+      document.getElementById('ticketModal').classList.remove('open');
+    }
+
+    function escapeHtml(str) {
+      if (!str) return '';
+      return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+    }
+
+    window.addEventListener('hashchange', handleRouting);
+    window.addEventListener('DOMContentLoaded', init);
+  </script>
+</body>
+</html>

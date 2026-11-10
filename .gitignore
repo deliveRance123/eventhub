@@ -1,0 +1,12 @@
+node_modules/
+dist/
+client/dist/
+.vercel/
+.env
+server/.env
+*.sqlite
+*.sqlite-journal
+*.sqlite-wal
+*.sqlite-shm
+.DS_Store
+Thumbs.db
