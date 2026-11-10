@@ -135,7 +135,8 @@ if (DATABASE_URL.startsWith('postgres://') || DATABASE_URL.startsWith('postgresq
 
 if (clientType === 'sqlite') {
   const { DatabaseSync } = await import('node:sqlite');
-  sqliteDb = new DatabaseSync(path.join(__dirname, '../database.sqlite'));
+  const sqlitePath = process.env.VERCEL ? '/tmp/database.sqlite' : path.join(__dirname, '../database.sqlite');
+  sqliteDb = new DatabaseSync(sqlitePath);
 
   sqliteDb.exec(`
     PRAGMA journal_mode = WAL;

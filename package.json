@@ -6,7 +6,7 @@
   "scripts": {
     "start": "node index.js",
     "dev": "node index.js",
-    "build": "echo 'Frontend ready in public/'"
+    "build": "node -e \"import fs from 'node:fs'; fs.mkdirSync('dist', {recursive:true}); fs.copyFileSync('public/index.html', 'dist/index.html');\""
   },
   "dependencies": {
     "bcryptjs": "^2.4.3",

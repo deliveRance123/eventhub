@@ -20,11 +20,11 @@ app.use(cors({
 
 app.use(express.json({ limit: '1mb' }));
 
-// API Routes
-app.get('/api/health', (_req, res) => res.json({ status: 'ok', service: 'event-management-api' }));
-app.use('/api/auth', authRoutes);
-app.use('/api/events', eventRoutes);
-app.use('/api/registrations', registrationRoutes);
+// API Routes (supports both /api prefix and direct serverless invocation)
+app.get(['/api/health', '/health'], (_req, res) => res.json({ status: 'ok', service: 'event-management-api' }));
+app.use(['/api/auth', '/auth'], authRoutes);
+app.use(['/api/events', '/events'], eventRoutes);
+app.use(['/api/registrations', '/registrations'], registrationRoutes);
 
 // Serve the frontend client directly
 const publicDir = path.join(__dirname, '../public');
